@@ -13,7 +13,9 @@ enum HomeSection: String, CaseIterable, Identifiable {
 /// L'onglet Amis : le Fil des publications, les Flashs reçus, et les amis.
 struct FriendsView: View {
     @Environment(AppStore.self) private var store
-    @State private var section: HomeSection = .feed
+    // `-flashaSection Flashs` au lancement ouvre directement cette section (captures).
+    @State private var section: HomeSection =
+        UserDefaults.standard.string(forKey: "flashaSection").flatMap(HomeSection.init(rawValue:)) ?? .feed
     @State private var openedFlash: Flash?
     @State private var addingFriend = false
 

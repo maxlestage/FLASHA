@@ -1,12 +1,18 @@
 import SwiftUI
 
-enum AppTab: Hashable {
+enum AppTab: String, Hashable {
     case friends, talka, camera, discover, profile
+
+    /// L'onglet d'ouverture : la caméra, sauf si l'app est lancée avec
+    /// `-flashaTab <onglet>` (captures d'écran automatiques dans le simulateur).
+    static var initial: AppTab {
+        UserDefaults.standard.string(forKey: "flashaTab").flatMap(AppTab.init(rawValue:)) ?? .camera
+    }
 }
 
 /// La navigation principale, en cinq sections, qui s'ouvre sur la caméra.
 struct RootView: View {
-    @State private var tab: AppTab = .camera
+    @State private var tab: AppTab = .initial
 
     var body: some View {
         TabView(selection: $tab) {
