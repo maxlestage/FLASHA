@@ -151,6 +151,45 @@ Sur le simulateur, qui n'a pas de caméra, une photo de démonstration remplace 
 Les données sont locales : le serveur, les appels et l'enregistrement vidéo arrivent avec les
 phases suivantes de la feuille de route.
 
+## Déployer sur Heroku depuis un téléphone
+
+Le serveur (le site et le relais sans base) se déploie sur Heroku avec le buildpack
+[emk/rust](https://elements.heroku.com/buildpacks/emk/heroku-buildpack-rust), sur la pile
+heroku-26 (`RustConfig`, `heroku-build.sh`, `Procfile`, `app.json`). Aucun ordinateur n'est
+nécessaire : tout se fait dans le navigateur du téléphone.
+
+[![Déployer sur Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/maxlestage/FLASHA)
+
+**1. Créer l'application (une seule fois)**
+
+1. Créez un compte sur [heroku.com](https://signup.heroku.com) et ajoutez un moyen de paiement
+   (*Account settings → Billing*) : Heroku n'a pas d'offre gratuite, un dyno *Eco* coûte
+   environ 5 $ par mois.
+2. Touchez le bouton **Déployer sur Heroku** ci-dessus (ou ouvrez
+   `https://heroku.com/deploy?template=https://github.com/maxlestage/FLASHA`), choisissez un nom
+   d'application, par exemple `flasha-relais`, puis **Deploy app**. La première compilation dure
+   une dizaine de minutes.
+3. Touchez **View** : le site s'ouvre sur `https://<nom>.herokuapp.com`.
+
+**2. Brancher l'application iPhone sur le relais**
+
+Dans FLASHA : *Profil → Relais*, saisissez `https://<nom>.herokuapp.com`, puis **Se connecter**.
+
+**3. Déploiement automatique de chaque fusion (facultatif)**
+
+1. Heroku → *Account settings* → *API Key* → **Reveal**, puis copiez la clé.
+2. Sur GitHub, dans le navigateur du téléphone (l'application GitHub n'a pas ces réglages ;
+   au besoin, demandez la version « ordinateur » du site) : dépôt FLASHA → *Settings → Secrets
+   and variables → Actions* :
+   - onglet *Secrets* → **New repository secret** : `HEROKU_API_KEY`, avec la clé copiée ;
+   - onglet *Variables* → **New repository variable** : `HEROKU_APP_NAME`, avec le nom choisi.
+3. Dans l'application GitHub : *Actions → Deploy to Heroku → Run workflow*. Ensuite, chaque
+   fusion dans `master` est déployée toute seule.
+
+Le relais n'a ni base de données ni disque : rien à ajouter sur Heroku (pas de module
+complémentaire, pas de Postgres). La variable `HEROKU_BUILD=docker` permet de construire avec le
+`Dockerfile` à la place du buildpack.
+
 ## Toujours fusionné dans master
 
 Chaque push lance la CI (`.github/workflows/ci.yml`) : formatage, clippy (serveur et
