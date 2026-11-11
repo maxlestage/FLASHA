@@ -55,9 +55,9 @@ nonisolated enum PhotoEncoder {
 /// Affiche une photo sans la décoder en entier : seulement à la taille de l'écran,
 /// ce qui divise la mémoire vive utilisée.
 nonisolated enum ImageLoader {
-    static func image(at url: URL, maxPixelSize: CGFloat) -> UIImage? {
+    static func image(data: Data, maxPixelSize: CGFloat) -> UIImage? {
         let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, sourceOptions) else { return nil }
+        guard let source = CGImageSourceCreateWithData(data as CFData, sourceOptions) else { return nil }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,

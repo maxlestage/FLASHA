@@ -1,6 +1,8 @@
 import Foundation
+import UIKit
 
-/// Les photos et vidéos gardées sur le téléphone, dans le cache de l'app.
+/// Les photos et vidéos gardées sur le téléphone, chiffrées en AES-256-GCM avec la clé du
+/// coffre (`Vault`) : aucun fichier n'est jamais écrit en clair.
 ///
 /// Une limite de place est fixée (1 Go par défaut, réglable dans le Profil). Quand elle
 /// est dépassée, les médias les plus anciens sont effacés en premier. Les médias
@@ -9,9 +11,9 @@ nonisolated final class MediaStore: @unchecked Sendable {
     static let shared = MediaStore()
 
     nonisolated enum Kind: String, Sendable {
-        case photo = "heic"
-        case thumbnail = "thumb.heic"
-        case video = "mp4"
+        case photo
+        case thumbnail = "thumb"
+        case video
     }
 
     static let quotas: [Int64] = [250_000_000, 500_000_000, 1_000_000_000, 2_000_000_000]
@@ -21,9 +23,14 @@ nonisolated final class MediaStore: @unchecked Sendable {
     private let defaults = UserDefaults.standard
 
     init() {
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        directory = caches.appending(path: "FlashaMedia", directoryHint: .isDirectory)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        var folder = Vault.shared.directory.appending(path: "Media", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // Les médias sont lourds et chiffrés avec une clé liée à cet iPhone : une sauvegarde
+        // ne pourrait pas les relire ailleurs, inutile de l'alourdir.
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try? folder.setResourceValues(values)
+        directory = folder
     }
 
     /// La place que les médias peuvent prendre, en octets.
@@ -36,19 +43,42 @@ nonisolated final class MediaStore: @unchecked Sendable {
     }
 
     func url(for id: UUID, kind: Kind) -> URL {
-        directory.appending(path: "\(id.uuidString).\(kind.rawValue)")
+        directory.appending(path: "\(id.uuidString).\(kind.rawValue).flasha")
     }
 
     /// Un fichier temporaire, pour une vidéo en cours de conversion.
     func temporaryURL(kind: Kind) -> URL {
-        FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).\(kind.rawValue)")
+        let ext = kind == .video ? FlashaFormat.Video.fileExtension : FlashaFormat.Photo.fileExtension
+        return FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).\(ext)")
+    }
+
+    private func write(_ data: Data, id: UUID, kind: Kind) throws {
+        try Vault.shared.seal(data).write(to: url(for: id, kind: kind), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+    }
+
+    /// Le média déchiffré, ou `nil` s'il a été effacé ou modifié.
+    func data(id: UUID, kind: Kind) -> Data? {
+        guard let sealed = try? Data(contentsOf: url(for: id, kind: kind)) else { return nil }
+        return try? Vault.shared.open(sealed)
+    }
+
+    /// Une photo, décodée seulement à la taille d'affichage.
+    func image(id: UUID, kind: Kind = .photo, maxPixelSize: CGFloat) -> UIImage? {
+        data(id: id, kind: kind).flatMap { ImageLoader.image(data: $0, maxPixelSize: maxPixelSize) }
+    }
+
+    /// Une vidéo, déchiffrée dans un fichier temporaire pour la lecture (à effacer après).
+    func playableVideo(id: UUID) -> URL? {
+        guard let plain = data(id: id, kind: .video) else { return nil }
+        let target = temporaryURL(kind: .video)
+        return (try? plain.write(to: target, options: [.atomic, .completeFileProtection])) == nil ? nil : target
     }
 
     /// Enregistre une photo et sa miniature.
     @discardableResult
     func save(_ photo: EncodedPhoto, id: UUID = UUID(), pinned: Bool = false) throws -> UUID {
-        try photo.data.write(to: url(for: id, kind: .photo), options: .atomic)
-        try photo.thumbnail.write(to: url(for: id, kind: .thumbnail), options: .atomic)
+        try write(photo.data, id: id, kind: .photo)
+        try write(photo.thumbnail, id: id, kind: .thumbnail)
         if pinned { pin(id) }
         trim()
         return id
@@ -57,9 +87,9 @@ nonisolated final class MediaStore: @unchecked Sendable {
     /// Range une vidéo déjà convertie dans le cache.
     @discardableResult
     func save(_ video: EncodedVideo, id: UUID = UUID(), pinned: Bool = false) throws -> UUID {
-        let target = url(for: id, kind: .video)
-        try? FileManager.default.removeItem(at: target)
-        try FileManager.default.moveItem(at: video.url, to: target)
+        let plain = try Data(contentsOf: video.url)
+        try write(plain, id: id, kind: .video)
+        try? FileManager.default.removeItem(at: video.url)
         if pinned { pin(id) }
         trim()
         return id
@@ -127,6 +157,16 @@ nonisolated final class MediaStore: @unchecked Sendable {
                 }
             }
             return removed
+        }
+    }
+
+    /// Efface tous les médias, épinglés compris.
+    func removeAll() {
+        lock.withLock {
+            for entry in entries() {
+                try? FileManager.default.removeItem(at: entry.url)
+            }
+            pinned = []
         }
     }
 
