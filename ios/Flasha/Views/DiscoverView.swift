@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Découvrir : les Clips, des vidéos courtes en plein écran, une par page.
-/// « Pour toi » montre tout, « Abonnements » seulement les créateurs suivis.
+/// Les Rushs : des vidéos courtes en plein écran, une par page, comme des images de
+/// film. « Découvertes » montre tout, « Mes suivis » seulement les personnes suivies.
 struct DiscoverView: View {
     @Environment(AppStore.self) private var store
     @State private var forYou = true
@@ -17,7 +17,7 @@ struct DiscoverView: View {
                 ContentUnavailableView(
                     "Aucun abonnement",
                     systemImage: "person.badge.plus",
-                    description: Text("Suivez des créateurs depuis « Pour toi » pour retrouver leurs Clips ici.")
+                    description: Text("Suivez quelqu'un depuis « Découvertes » pour retrouver ses Rushs ici.")
                 )
                 .foregroundStyle(.white)
             } else {
@@ -36,8 +36,8 @@ struct DiscoverView: View {
             }
 
             HStack(spacing: 22) {
-                tab("Abonnements", selected: !forYou) { forYou = false }
-                tab("Pour toi", selected: forYou) { forYou = true }
+                tab("Mes suivis", selected: !forYou) { forYou = false }
+                tab("Découvertes", selected: forYou) { forYou = true }
             }
             .padding(.top, 8)
         }
@@ -94,10 +94,10 @@ private struct ClipPage: View {
                 .accessibilityHidden(true)
 
             if burst {
-                Image(systemName: "heart.fill")
+                Image(systemName: "sparkle")
                     .font(.system(size: 120))
                     .foregroundStyle(.white)
-                    .shadow(color: Theme.pink, radius: 20)
+                    .shadow(color: Theme.halo, radius: 20)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.scale(scale: 0.3).combined(with: .opacity))
             }
@@ -147,15 +147,15 @@ private struct ClipPage: View {
             .accessibilityLabel(store.isFollowing(clip.creator) ? "Ne plus suivre \(clip.creator)" : "Suivre \(clip.creator)")
             .padding(.bottom, 6)
 
-            railButton(clip.liked ? "heart.fill" : "heart", compactCount(clip.likes), tint: clip.liked ? Theme.pink : .white) {
+            railButton("sparkle", clip.liked ? "Envoyé" : "Éclat", tint: clip.liked ? Theme.halo : .white) {
                 withAnimation(.spring) { store.toggleLike(clip: clip.id) }
             }
-            .accessibilityLabel(clip.liked ? "Ne plus aimer" : "J'aime")
+            .accessibilityLabel(clip.liked ? "Reprendre l'éclat" : "Envoyer un éclat")
 
             railButton("bubble.right.fill", compactCount(clip.comments.count), action: onComments)
                 .accessibilityLabel("Commentaires")
 
-            railButton(clip.saved ? "bookmark.fill" : "bookmark", "Favoris", tint: clip.saved ? Theme.orange : .white) {
+            railButton(clip.saved ? "bookmark.fill" : "bookmark", "Garder", tint: clip.saved ? Theme.halo : .white) {
                 withAnimation(.spring) { store.toggleSave(clip: clip.id) }
             }
             .accessibilityLabel(clip.saved ? "Retirer des favoris" : "Enregistrer")

@@ -10,7 +10,8 @@ struct FlashaApp: App {
         WindowGroup {
             RootView()
                 .environment(store)
-                .tint(Theme.pink)
+                .tint(Theme.cyan)
+                .fontDesign(.serif)
         }
         .onChange(of: scenePhase) {
             // De retour au premier plan : on se reconnecte et on renvoie ce qui attend.

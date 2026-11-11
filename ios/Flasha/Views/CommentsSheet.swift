@@ -34,7 +34,7 @@ struct CommentsSheet: View {
                             }
                             Spacer()
                             if comment.likes > 0 {
-                                Label("\(comment.likes)", systemImage: "heart")
+                                Label("\(comment.likes)", systemImage: "sparkle")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }

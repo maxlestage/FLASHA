@@ -22,10 +22,10 @@ struct RootView: View {
             Tab("Talka", systemImage: "bubble.left.and.bubble.right.fill", value: AppTab.talka) {
                 TalkaView()
             }
-            Tab("Caméra", systemImage: "camera.fill", value: AppTab.camera) {
+            Tab("Chambre", systemImage: "camera.aperture", value: AppTab.camera) {
                 CameraScreen()
             }
-            Tab("Découvrir", systemImage: "safari.fill", value: AppTab.discover) {
+            Tab("Rushs", systemImage: "film.stack", value: AppTab.discover) {
                 DiscoverView()
             }
             Tab("Profil", systemImage: "person.crop.circle.fill", value: AppTab.profile) {
@@ -35,7 +35,8 @@ struct RootView: View {
     }
 }
 
-/// L'avatar d'un ami, avec l'anneau animé de ses nouvelles stories.
+/// L'avatar d'un ami : un tirage de photomaton carré ; autour, les perforations orange
+/// de sa Pellicule du jour.
 struct AvatarView: View {
     let friend: Friend
     var size: CGFloat = 52
@@ -46,18 +47,19 @@ struct AvatarView: View {
     var body: some View {
         ZStack {
             if showsStoryRing && friend.hasNewStory {
-                Circle()
-                    .strokeBorder(Theme.ring, lineWidth: 3)
-                    .rotationEffect(.degrees(spin ? 360 : 0))
-                    .animation(.linear(duration: 4).repeatForever(autoreverses: false), value: spin)
+                RoundedRectangle(cornerRadius: size * 0.22)
+                    .strokeBorder(Theme.halo, style: StrokeStyle(lineWidth: 3, dash: [5, 4]))
+                    .rotationEffect(.degrees(spin ? 4 : -4))
+                    .animation(.easeInOut(duration: 1.6).repeatForever(), value: spin)
                     .onAppear { spin = true }
             }
-            Circle()
-                .fill(friend.color.gradient)
-                .padding(showsStoryRing ? 6 : 0)
+            RoundedRectangle(cornerRadius: size * 0.16)
+                .fill(friend.color)
+                .overlay(RoundedRectangle(cornerRadius: size * 0.16).stroke(Theme.line, lineWidth: 2))
+                .padding(showsStoryRing ? 7 : 0)
             Text(friend.initial)
-                .font(.system(size: size * 0.38, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .font(.system(size: size * 0.4, weight: .heavy, design: .serif).italic())
+                .foregroundStyle(Theme.paperLight)
         }
         .frame(width: size, height: size)
         .accessibilityLabel(friend.name)

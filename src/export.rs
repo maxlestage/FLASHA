@@ -11,9 +11,11 @@ use std::path::{Path, PathBuf};
 use paquets::prelude::*;
 
 /// Les adresses absolues que la page écrit, à placer derrière le chemin de base.
-const ABSOLUTE: [&str; 6] = [
+const ABSOLUTE: [&str; 8] = [
     "\"/flasha.css",
     "\"/favicon.svg\"",
+    "\"/fonts/",
+    "\"/icons/",
     "\"/pkg/",
     "\"/paquets/",
     "\"/manifest.webmanifest\"",
@@ -89,13 +91,6 @@ pub async fn export(mut app: App, out: &Path, base: &str) -> io::Result<usize> {
     for file in ["/manifest.webmanifest", "/sw.js"] {
         let body = get(file).await?.text();
         write(file, with_base_everywhere(&body, &base).as_bytes())?;
-    }
-    for icon in [
-        "/paquets/icon-192.png",
-        "/paquets/icon-512.png",
-        "/paquets/icon-maskable-512.png",
-    ] {
-        write(icon, get(icon).await?.bytes())?;
     }
     for folder in ["public", "pkg"] {
         let root = Path::new(folder);

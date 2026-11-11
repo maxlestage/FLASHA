@@ -70,7 +70,7 @@ jobs:
             xcrun simctl io "$udid" screenshot "captures/$name.png"
             echo "capture $name"
           }
-          shot 1-fil -flashaTab friends -flashaSection Fil
+          shot 1-fil -flashaTab friends -flashaSection Planche
           shot 2-flashs -flashaTab friends -flashaSection Flashs
           shot 3-amis -flashaTab friends -flashaSection Amis
           shot 4-talka -flashaTab talka

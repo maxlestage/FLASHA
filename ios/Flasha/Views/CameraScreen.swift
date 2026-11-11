@@ -113,9 +113,8 @@ struct CameraScreen: View {
     private var controls: some View {
         VStack {
             HStack {
-                Text("FLASHA")
-                    .font(.headline.weight(.black))
-                    .tracking(4)
+                Text("flasha")
+                    .font(.system(.title2, design: .serif, weight: .heavy).italic())
                     .foregroundStyle(.white)
                 Spacer()
                 VStack(spacing: 14) {
@@ -158,7 +157,7 @@ struct CameraScreen: View {
                 .rotationEffect(.degrees(-90))
                 .frame(width: 84, height: 84)
             Circle()
-                .fill(recording ? AnyShapeStyle(Color.red) : AnyShapeStyle(Theme.gradient))
+                .fill(recording ? AnyShapeStyle(Color.red) : AnyShapeStyle(Theme.halo))
                 .frame(width: recording ? 44 : 68, height: recording ? 44 : 68)
         }
         .animation(.spring(duration: 0.3), value: recording)

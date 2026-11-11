@@ -23,6 +23,7 @@ struct FlashViewer: View {
                     Image(uiImage: .flashaPlaceholder()).resizable().scaledToFill()
                 }
             }
+            .developing()
             .ignoresSafeArea()
             .overlay {
                 Text(flash.caption)

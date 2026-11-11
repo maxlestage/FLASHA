@@ -7,26 +7,30 @@
 use paquets::prelude::*;
 
 pub mod content;
+pub mod share;
 pub mod social;
 
+pub use share::{install, share};
 pub use social::{clips, fil};
 
 #[cfg(target_arch = "wasm32")]
 mod scene;
 
 /// Chaque îlot, sous le nom donné à [`island`].
-pub const ISLANDS: [(&str, paquets::active::IslandFn); 6] = [
+pub const ISLANDS: [(&str, paquets::active::IslandFn); 8] = [
     ("scene", scene),
     ("camera", camera),
     ("flash", flash),
     ("talka", talka),
     ("clips", clips),
     ("fil", fil),
+    ("share", share),
+    ("install", install),
 ];
 
 // ----- La scène 2D -------------------------------------------------------------------
 
-/// L'écran du téléphone : une scène 2D de bulles de lumière qui montent, et un
+/// Le viseur : une scène 2D de grains d'argent qui montent, et un
 /// éclat de particules à chaque toucher.
 pub fn scene(_props: &str) -> Node {
     canvas()
@@ -34,7 +38,7 @@ pub fn scene(_props: &str) -> Node {
         .attr("role", "img")
         .attr(
             "aria-label",
-            "Animation : des bulles de lumière violettes, roses et orange. Touchez l'écran pour déclencher un flash.",
+            "Animation : des grains bleus, orange et noirs qui montent. Touchez le viseur pour déclencher un éclat.",
         )
         .use_action(play)
         .into()
@@ -56,10 +60,10 @@ fn play(_canvas: &paquets::active::Dom) -> impl FnOnce() + use<> {
 /// Les filtres de la caméra de démonstration : (nom affiché, classe CSS).
 pub const FILTERS: [(&str, &str); 5] = [
     ("Naturel", "f-natural"),
-    ("Néon", "f-neon"),
-    ("Vintage", "f-vintage"),
-    ("Aube", "f-dawn"),
-    ("Noir", "f-noir"),
+    ("Cyanotype", "f-cyano"),
+    ("Argentique", "f-silver"),
+    ("Halo", "f-halo"),
+    ("Sépia", "f-sepia"),
 ];
 
 /// Une caméra de démonstration : des filtres, photo ou vidéo, et un déclencheur
@@ -76,10 +80,10 @@ pub fn camera(_props: &str) -> Node {
             div()
                 .class("cam__view")
                 .class_if("f-natural", move || filter.get() == 0)
-                .class_if("f-neon", move || filter.get() == 1)
-                .class_if("f-vintage", move || filter.get() == 2)
-                .class_if("f-dawn", move || filter.get() == 3)
-                .class_if("f-noir", move || filter.get() == 4)
+                .class_if("f-cyano", move || filter.get() == 1)
+                .class_if("f-silver", move || filter.get() == 2)
+                .class_if("f-halo", move || filter.get() == 3)
+                .class_if("f-sepia", move || filter.get() == 4)
                 .class_if("is-recording", move || recording.get())
                 .child(
                     div()
@@ -183,17 +187,17 @@ pub fn camera(_props: &str) -> Node {
 /// Le paysage vu par la caméra : un coucher de soleil en 2D, animé en CSS.
 const SCENE_SVG: &str = r##"<svg viewBox="0 0 320 400" preserveAspectRatio="xMidYMid slice" focusable="false">
 <defs>
-<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b145e"/><stop offset=".55" stop-color="#c2338f"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient>
-<radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4c2"/><stop offset=".6" stop-color="#ffc34d"/><stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/></radialGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D3FD1"/><stop offset=".6" stop-color="#7C93FF"/><stop offset="1" stop-color="#FFB199"/></linearGradient>
+<radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF3E6"/><stop offset=".55" stop-color="#FF7A4D"/><stop offset="1" stop-color="#FF5B2E" stop-opacity="0"/></radialGradient>
 </defs>
 <rect width="320" height="400" fill="url(#sky)"/>
 <g class="sc-stars" fill="#fff"><circle cx="40" cy="50" r="1.4"/><circle cx="110" cy="30" r="1"/><circle cx="200" cy="60" r="1.6"/><circle cx="270" cy="35" r="1.1"/><circle cx="160" cy="95" r="1"/><circle cx="290" cy="110" r="1.3"/></g>
 <circle class="sc-sun" cx="160" cy="250" r="70" fill="url(#sun)"/>
 <g class="sc-cloud" fill="#ffffff" fill-opacity=".35"><ellipse cx="70" cy="140" rx="46" ry="12"/><ellipse cx="96" cy="132" rx="26" ry="11"/></g>
 <g class="sc-cloud sc-cloud--2" fill="#ffffff" fill-opacity=".25"><ellipse cx="240" cy="180" rx="40" ry="10"/><ellipse cx="258" cy="173" rx="22" ry="9"/></g>
-<path d="M0 300 L60 250 L110 285 L170 235 L230 290 L280 255 L320 280 L320 400 L0 400Z" fill="#3a1757"/>
-<path d="M0 330 L70 300 L140 335 L210 305 L270 330 L320 312 L320 400 L0 400Z" fill="#22093a"/>
-<g class="sc-waves" stroke="#ff9bd2" stroke-opacity=".5" stroke-width="2" fill="none"><path d="M20 365 q20 -8 40 0 t40 0"/><path d="M180 375 q20 -8 40 0 t40 0"/></g>
+<path d="M0 300 L60 250 L110 285 L170 235 L230 290 L280 255 L320 280 L320 400 L0 400Z" fill="#132C94"/>
+<path d="M0 330 L70 300 L140 335 L210 305 L270 330 L320 312 L320 400 L0 400Z" fill="#15130F"/>
+<g class="sc-waves" stroke="#F2ECE1" stroke-opacity=".5" stroke-width="2" fill="none"><path d="M20 365 q20 -8 40 0 t40 0"/><path d="M180 375 q20 -8 40 0 t40 0"/></g>
 </svg>"##;
 
 // ----- Les Flashs -----------------------------------------------------------------------
@@ -356,13 +360,13 @@ pub fn flash(_props: &str) -> Node {
 
 /// La photo du Flash de démonstration.
 const FLASH_SVG: &str = r##"<svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice" focusable="false">
-<defs><linearGradient id="sn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset=".5" stop-color="#ec4899"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs>
+<defs><linearGradient id="sn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1D3FD1"/><stop offset="1" stop-color="#2E5BFF"/></linearGradient></defs>
 <rect width="300" height="300" fill="url(#sn)"/>
-<g class="sn-confetti"><rect x="40" y="40" width="10" height="18" rx="3" fill="#fde68a"/><rect x="230" y="60" width="10" height="18" rx="3" fill="#fff" transform="rotate(30 235 69)"/><circle cx="70" cy="230" r="7" fill="#fff"/><circle cx="250" cy="220" r="6" fill="#fde68a"/></g>
-<circle cx="150" cy="140" r="62" fill="#fff" fill-opacity=".92"/>
-<circle cx="128" cy="128" r="8" fill="#2b145e"/><circle cx="172" cy="128" r="8" fill="#2b145e"/>
-<path d="M120 158 q30 28 60 0" stroke="#2b145e" stroke-width="8" fill="none" stroke-linecap="round"/>
-<text x="150" y="262" text-anchor="middle" font-size="26" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">Coucou ✨</text>
+<g class="sn-confetti"><rect x="40" y="40" width="10" height="18" rx="3" fill="#FF5B2E"/><rect x="230" y="60" width="10" height="18" rx="3" fill="#fff" transform="rotate(30 235 69)"/><circle cx="70" cy="230" r="7" fill="#fff"/><circle cx="250" cy="220" r="6" fill="#FF5B2E"/></g>
+<circle cx="150" cy="140" r="62" fill="#F2ECE1"/>
+<circle cx="128" cy="128" r="8" fill="#15130F"/><circle cx="172" cy="128" r="8" fill="#15130F"/>
+<path d="M120 158 q30 28 60 0" stroke="#15130F" stroke-width="8" fill="none" stroke-linecap="round"/>
+<text x="150" y="262" text-anchor="middle" font-size="26" font-weight="800" fill="#fff" font-family="Fraunces,serif" font-style="italic">Coucou ✦</text>
 </svg>"##;
 
 // ----- Talka ---------------------------------------------------------------------------
@@ -372,9 +376,9 @@ type Message = (bool, String);
 
 /// Les réponses de Léa, à tour de rôle.
 pub const REPLIES: [&str; 5] = [
-    "Trop bien ! Envoie-moi un Flash 📸",
+    "Trop bien ! Envoie-moi un Flash ✦",
     "Je t'appelle en vidéo dans 5 min ?",
-    "Ajouté à notre album Talka Moments ✨",
+    "Ajouté à notre Planche partagée",
     "Haha 😂 j'adore",
     "On se retrouve ce soir ?",
 ];
@@ -382,7 +386,7 @@ pub const REPLIES: [&str; 5] = [
 /// Une conversation Talka : écrire, envoyer, et Léa répond.
 pub fn talka(_props: &str) -> Node {
     let messages = use_state(vec![
-        (false, "Salut ! Tu as vu la story de Sam ? 🌅".to_owned()),
+        (false, "Salut ! Tu as vu la Pellicule de Sam ?".to_owned()),
         (true, "Oui, le coucher de soleil était fou".to_owned()),
     ]);
     let draft = use_state(String::new());

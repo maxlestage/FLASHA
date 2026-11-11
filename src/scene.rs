@@ -1,17 +1,12 @@
-//! La scène 2D de l'écran du héros, avec le moteur `paquets::ecs` : des bulles de
-//! lumière qui montent en ondulant, et un éclat de particules à chaque toucher.
+//! La scène 2D du viseur, avec le moteur `paquets::ecs` : des grains d'argent qui
+//! montent en ondulant, et un éclat de particules à chaque toucher.
 //! Le canvas est transparent : le dégradé de l'écran, en CSS, passe derrière.
 
 use paquets::ecs::prelude::*;
 use wasm_bindgen::JsCast;
 
-/// Les couleurs de FLASHA : violet, rose, orange, et une touche de blanc.
-const PALETTE: [(u8, u8, u8); 4] = [
-    (167, 139, 250),
-    (244, 114, 182),
-    (251, 146, 60),
-    (255, 255, 255),
-];
+/// Les couleurs de FLASHA : bleu cyanotype, halo orange, encre, et un bleu vif.
+const PALETTE: [(u8, u8, u8); 4] = [(29, 63, 209), (255, 91, 46), (21, 19, 15), (46, 91, 255)];
 
 /// Une bulle qui monte : vitesse (px/s), amplitude et phase de l'ondulation.
 struct Bubble {

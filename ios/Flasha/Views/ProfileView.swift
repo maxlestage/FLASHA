@@ -144,7 +144,8 @@ struct ProfileView: View {
                     Label("Stockage étendu, filtres exclusifs et outils de création — 4,99 € par mois (prix indicatif).", systemImage: "sparkles")
                 }
             }
-            .tint(Theme.pink)
+            .tint(Theme.cyan)
+            .paperBackground()
             .navigationTitle("Profil")
         }
     }

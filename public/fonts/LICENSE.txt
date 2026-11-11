@@ -1,0 +1,7 @@
+Polices de FLASHA, hébergées sur le site (aucune requête vers un service tiers) :
+
+- Fraunces — Undercase Type, SIL Open Font License 1.1
+- Instrument Sans — Instrument, SIL Open Font License 1.1
+- JetBrains Mono — JetBrains, SIL Open Font License 1.1
+
+Licence : https://openfontlicense.org

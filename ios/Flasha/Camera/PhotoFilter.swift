@@ -4,60 +4,69 @@ import UIKit
 /// Les filtres de l'éditeur, appliqués avec Core Image.
 enum PhotoFilter: String, CaseIterable, Identifiable {
     case natural = "Naturel"
-    case neon = "Néon"
-    case vintage = "Vintage"
-    case dawn = "Aube"
-    case noir = "Noir"
+    case cyanotype = "Cyanotype"
+    case silver = "Argentique"
+    case halo = "Halo"
+    case sepia = "Sépia"
 
     var id: String { rawValue }
 
-    private var filterName: String? {
+    private static let context = CIContext()
+
+    /// Les tirages de l'atelier : des procédés photographiques, pas des filtres à la mode.
+    private func filtered(_ input: CIImage) -> CIImage? {
         switch self {
-        case .natural: nil
-        case .neon: "CIPhotoEffectChrome"
-        case .vintage: "CIPhotoEffectTransfer"
-        case .dawn: "CIPhotoEffectInstant"
-        case .noir: "CIPhotoEffectNoir"
+        case .natural:
+            return nil
+        case .cyanotype:
+            // Le bleu de Prusse des tirages au fer : noir et blanc, puis teinté cyan.
+            return input
+                .applyingFilter("CIPhotoEffectNoir")
+                .applyingFilter("CIColorMonochrome", parameters: [
+                    kCIInputColorKey: CIColor(red: 0.114, green: 0.247, blue: 0.820),
+                    kCIInputIntensityKey: 1.0,
+                ])
+        case .silver:
+            return input.applyingFilter("CIPhotoEffectNoir")
+        case .halo:
+            return input.applyingFilter("CIPhotoEffectInstant")
+        case .sepia:
+            return input.applyingFilter("CISepiaTone", parameters: [kCIInputIntensityKey: 0.9])
         }
     }
 
-    private static let context = CIContext()
-
     func apply(to image: UIImage) -> UIImage {
-        guard let name = filterName,
-              let input = CIImage(image: image),
-              let filter = CIFilter(name: name)
-        else { return image }
-        filter.setValue(input, forKey: kCIInputImageKey)
-        guard let output = filter.outputImage,
-              let cgImage = Self.context.createCGImage(output, from: output.extent)
+        guard let input = CIImage(image: image),
+              let output = filtered(input),
+              let cgImage = Self.context.createCGImage(output, from: input.extent)
         else { return image }
         return UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
     }
 }
 
 extension UIImage {
-    /// Une image de démonstration, pour le simulateur qui n'a pas de caméra.
+    /// Une image de démonstration, pour le simulateur qui n'a pas de caméra : une mer
+    /// cyanotype, un soleil de papier et l'éclat du flash.
     static func flashaPlaceholder(size: CGSize = CGSize(width: 1080, height: 1920)) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { context in
-            let colors = [
-                UIColor(red: 0.545, green: 0.361, blue: 0.965, alpha: 1).cgColor,
-                UIColor(red: 0.925, green: 0.282, blue: 0.600, alpha: 1).cgColor,
-                UIColor(red: 0.984, green: 0.573, blue: 0.235, alpha: 1).cgColor,
-            ]
-            let space = CGColorSpaceCreateDeviceRGB()
-            if let gradient = CGGradient(colorsSpace: space, colors: colors as CFArray, locations: [0, 0.55, 1]) {
-                context.cgContext.drawLinearGradient(
-                    gradient,
-                    start: .zero,
-                    end: CGPoint(x: size.width, y: size.height),
-                    options: []
-                )
-            }
-            let sun = CGRect(x: size.width * 0.3, y: size.height * 0.45, width: size.width * 0.4, height: size.width * 0.4)
-            UIColor.white.withAlphaComponent(0.85).setFill()
-            context.cgContext.fillEllipse(in: sun)
+            let cg = context.cgContext
+            UIColor(red: 0.114, green: 0.247, blue: 0.820, alpha: 1).setFill()
+            cg.fill(CGRect(origin: .zero, size: size))
+            UIColor(red: 0.949, green: 0.925, blue: 0.882, alpha: 1).setFill()
+            cg.fillEllipse(in: CGRect(x: size.width * 0.5, y: size.height * 0.2, width: size.width * 0.32, height: size.width * 0.32))
+            UIColor(red: 0.075, green: 0.173, blue: 0.580, alpha: 1).setFill()
+            cg.fill(CGRect(x: 0, y: size.height * 0.62, width: size.width, height: size.height * 0.38))
+            UIColor(red: 1.0, green: 0.357, blue: 0.180, alpha: 1).setFill()
+            let c = CGPoint(x: size.width * 0.28, y: size.height * 0.3)
+            let r = size.width * 0.09
+            let spark = UIBezierPath()
+            spark.move(to: CGPoint(x: c.x, y: c.y - r))
+            spark.addQuadCurve(to: CGPoint(x: c.x + r, y: c.y), controlPoint: CGPoint(x: c.x + r * 0.12, y: c.y - r * 0.12))
+            spark.addQuadCurve(to: CGPoint(x: c.x, y: c.y + r), controlPoint: CGPoint(x: c.x + r * 0.12, y: c.y + r * 0.12))
+            spark.addQuadCurve(to: CGPoint(x: c.x - r, y: c.y), controlPoint: CGPoint(x: c.x - r * 0.12, y: c.y + r * 0.12))
+            spark.addQuadCurve(to: CGPoint(x: c.x, y: c.y - r), controlPoint: CGPoint(x: c.x - r * 0.12, y: c.y - r * 0.12))
+            spark.fill()
         }
     }
 }

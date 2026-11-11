@@ -1,10 +1,14 @@
-//! Les Clips (des vidéos courtes, verticales, une par écran) et le Fil (les
-//! publications photo en carrousel) : deux îlots, rendus par le serveur et
-//! interactifs dans le navigateur. Les décors sont des scènes 2D animées en CSS.
+//! Les Rushs (des vidéos courtes, verticales, une par écran, comme des images de
+//! film) et la Planche (la planche-contact des tirages des amis, qu'on entoure au
+//! crayon gras) : deux îlots, rendus par le serveur et interactifs dans le
+//! navigateur. Les décors sont des scènes 2D animées en CSS.
 
 use paquets::prelude::*;
 
 use crate::content::{CLIPS, SLIDES, compact};
+
+/// L'éclat ✦ de FLASHA, à la place du cœur.
+const SPARK: &str = r#"<path d="M12 1.5c.7 5.3 2.2 6.8 7.5 7.5-5.3.7-6.8 2.2-7.5 7.5-.7-5.3-2.2-6.8-7.5-7.5 5.3-.7 6.8-2.2 7.5-7.5z"/><path d="M19 15.5c.3 2.3 1 3 3.3 3.3-2.3.3-3 1-3.3 3.3-.3-2.3-1-3-3.3-3.3 2.3-.3 3-1 3.3-3.3z"/>"#;
 
 /// La position du pointeur d'un événement (`clientX`, `clientY`).
 #[cfg(target_arch = "wasm32")]
@@ -36,10 +40,8 @@ fn svg_icon(path: &str) -> String {
     )
 }
 
-const HEART: &str = r#"<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>"#;
 const COMMENT: &str = r#"<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.4-8.5A8.4 8.4 0 0 1 21 11.5z"/>"#;
 const SHARE: &str = r#"<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>"#;
-const SAVE: &str = r#"<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>"#;
 const REMIX: &str = r#"<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>"#;
 const UP: &str = r#"<path d="m18 15-6-6-6 6"/>"#;
 const DOWN: &str = r#"<path d="m6 9 6 6 6-6"/>"#;
@@ -52,26 +54,26 @@ const RIGHT: &str = r#"<path d="m9 18 6-6-6-6"/>"#;
 fn clip_scene(scene: &str) -> &'static str {
     match scene {
         "sunset" => {
-            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><defs><linearGradient id="c1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b1d6e"/><stop offset=".6" stop-color="#e2558f"/><stop offset="1" stop-color="#ffb35c"/></linearGradient></defs><rect width="270" height="480" fill="url(#c1)"/><circle class="cl-sun" cx="135" cy="300" r="62" fill="#ffe1a1"/><rect y="330" width="270" height="150" fill="#2a1450"/><g class="cl-waves" stroke="#ffb3d1" stroke-width="3" fill="none" stroke-linecap="round"><path d="M20 360h60M120 380h90M40 410h70M170 430h60"/></g><g class="cl-birds" stroke="#2a1450" stroke-width="3" fill="none"><path d="M60 120q8-8 16 0q8-8 16 0"/><path d="M150 90q6-6 12 0q6-6 12 0"/></g></svg>"##
+            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><defs><linearGradient id="c1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D3FD1"/><stop offset=".6" stop-color="#7C93FF"/><stop offset="1" stop-color="#FFB199"/></linearGradient></defs><rect width="270" height="480" fill="url(#c1)"/><circle class="cl-sun" cx="135" cy="300" r="62" fill="#FFF3E6"/><rect y="330" width="270" height="150" fill="#15130F"/><g class="cl-waves" stroke="#F2ECE1" stroke-width="3" fill="none" stroke-linecap="round"><path d="M20 360h60M120 380h90M40 410h70M170 430h60"/></g><g class="cl-birds" stroke="#15130F" stroke-width="3" fill="none"><path d="M60 120q8-8 16 0q8-8 16 0"/><path d="M150 90q6-6 12 0q6-6 12 0"/></g></svg>"##
         }
         "neon" => {
-            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="270" height="480" fill="#120726"/><g class="cl-grid" stroke="#8b5cf6" stroke-opacity=".5"><path d="M0 330h270M0 370h270M0 420h270M0 480h270M135 300v180M60 300l-60 180M210 300l60 180"/></g><path class="cl-bolt" d="M150 90 95 210h40l-15 100 70-140h-40z" fill="#fb923c"/><circle class="cl-ring" cx="135" cy="200" r="90" fill="none" stroke="#ec4899" stroke-width="4"/></svg>"##
+            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="270" height="480" fill="#15130F"/><g class="cl-grid" stroke="#2E5BFF" stroke-opacity=".5"><path d="M0 330h270M0 370h270M0 420h270M0 480h270M135 300v180M60 300l-60 180M210 300l60 180"/></g><path class="cl-bolt" d="M150 90 95 210h40l-15 100 70-140h-40z" fill="#FF5B2E"/><circle class="cl-ring" cx="135" cy="200" r="90" fill="none" stroke="#F2ECE1" stroke-width="4"/></svg>"##
         }
         "dance" => {
-            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><defs><radialGradient id="c3" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="#f472b6"/><stop offset="1" stop-color="#4c1d95"/></radialGradient></defs><rect width="270" height="480" fill="url(#c3)"/><g class="cl-dancer" fill="#fff"><circle cx="135" cy="170" r="22"/><path d="M135 195v90" stroke="#fff" stroke-width="14" stroke-linecap="round"/><path class="cl-arm" d="M135 215l-50-30M135 215l50-40" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M135 285l-35 70M135 285l35 70" stroke="#fff" stroke-width="11" stroke-linecap="round"/></g><g class="cl-notes" fill="#fde68a"><circle cx="50" cy="120" r="7"/><circle cx="220" cy="150" r="6"/><circle cx="60" cy="300" r="5"/><circle cx="215" cy="320" r="7"/></g></svg>"##
+            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><defs><radialGradient id="c3" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="#FF5B2E"/><stop offset="1" stop-color="#132C94"/></radialGradient></defs><rect width="270" height="480" fill="url(#c3)"/><g class="cl-dancer" fill="#fff"><circle cx="135" cy="170" r="22"/><path d="M135 195v90" stroke="#fff" stroke-width="14" stroke-linecap="round"/><path class="cl-arm" d="M135 215l-50-30M135 215l50-40" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M135 285l-35 70M135 285l35 70" stroke="#fff" stroke-width="11" stroke-linecap="round"/></g><g class="cl-notes" fill="#F2ECE1"><circle cx="50" cy="120" r="7"/><circle cx="220" cy="150" r="6"/><circle cx="60" cy="300" r="5"/><circle cx="215" cy="320" r="7"/></g></svg>"##
         }
         _ => {
-            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="270" height="480" fill="#ffedd5"/><circle cx="135" cy="300" r="95" fill="#1f2937"/><circle cx="135" cy="300" r="75" fill="#374151"/><g class="cl-crepe"><ellipse cx="135" cy="300" rx="62" ry="58" fill="#fbbf24"/><circle cx="115" cy="285" r="8" fill="#f59e0b"/><circle cx="155" cy="315" r="6" fill="#f59e0b"/></g><path d="M230 300h40" stroke="#1f2937" stroke-width="14" stroke-linecap="round"/><g class="cl-steam" stroke="#9ca3af" stroke-width="4" fill="none" stroke-linecap="round"><path d="M110 190q-10-20 0-40"/><path d="M135 180q-10-20 0-40"/><path d="M160 190q-10-20 0-40"/></g></svg>"##
+            r##"<svg viewBox="0 0 270 480" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="270" height="480" fill="#F2ECE1"/><circle cx="135" cy="300" r="95" fill="#15130F"/><circle cx="135" cy="300" r="75" fill="#2a2721"/><g class="cl-crepe"><ellipse cx="135" cy="300" rx="62" ry="58" fill="#FFB199"/><circle cx="115" cy="285" r="8" fill="#FF5B2E"/><circle cx="155" cy="315" r="6" fill="#FF5B2E"/></g><path d="M230 300h40" stroke="#15130F" stroke-width="14" stroke-linecap="round"/><g class="cl-steam" stroke="#1D3FD1" stroke-width="4" fill="none" stroke-linecap="round"><path d="M110 190q-10-20 0-40"/><path d="M135 180q-10-20 0-40"/><path d="M160 190q-10-20 0-40"/></g></svg>"##
         }
     }
 }
 
 /// Les Clips : une vidéo par écran, glisser vers le haut pour la suivante, toucher
-/// deux fois pour aimer, suivre les créateurs, et l'onglet Abonnements qui ne
+/// deux fois pour aimer, suivre les créateurs, et l'onglet Mes suivis qui ne
 /// montre que les créateurs suivis.
 pub fn clips(_props: &str) -> Node {
     let n = CLIPS.len();
-    // 0 : Abonnements, 1 : Pour toi.
+    // 0 : Mes suivis, 1 : Découvertes.
     let tab = use_state(1usize);
     let current = use_state(0usize);
     let liked = use_state(vec![false; n]);
@@ -116,26 +118,23 @@ pub fn clips(_props: &str) -> Node {
             div()
                 .class("clips__tabs")
                 .attr("role", "group")
-                .attr("aria-label", "Fil de Clips")
-                .children(
-                    ["Abonnements", "Pour toi"]
-                        .into_iter()
-                        .enumerate()
-                        .map(|(t, label)| {
-                            button()
-                                .class("clips__tab")
-                                .class_if("is-on", move || tab.get() == t)
-                                .attr("type", "button")
-                                .attr_dyn("aria-pressed", move || (tab.get() == t).to_string())
-                                .on_click(move |_| {
-                                    tab.set(t);
-                                    if let Some(&first) = visible().first() {
-                                        current.set(first);
-                                    }
-                                })
-                                .text(label)
-                        }),
-                ),
+                .attr("aria-label", "Rushs")
+                .children(["Mes suivis", "Découvertes"].into_iter().enumerate().map(
+                    |(t, label)| {
+                        button()
+                            .class("clips__tab")
+                            .class_if("is-on", move || tab.get() == t)
+                            .attr("type", "button")
+                            .attr_dyn("aria-pressed", move || (tab.get() == t).to_string())
+                            .on_click(move |_| {
+                                tab.set(t);
+                                if let Some(&first) = visible().first() {
+                                    current.set(first);
+                                }
+                            })
+                            .text(label)
+                    },
+                )),
         )
         .child(
             div()
@@ -151,7 +150,7 @@ pub fn clips(_props: &str) -> Node {
                         .class("clips__empty")
                         .bool_attr("hidden", move || !visible().is_empty())
                         .text(
-                            "Suivez un créateur depuis « Pour toi » pour retrouver ses Clips ici.",
+                            "Suivez quelqu'un depuis « Découvertes » pour retrouver ses Rushs ici.",
                         ),
                 )
                 .child(
@@ -169,7 +168,7 @@ pub fn clips(_props: &str) -> Node {
                             button()
                                 .class("clips__arrow")
                                 .attr("type", "button")
-                                .attr("aria-label", "Clip précédent")
+                                .attr("aria-label", "Rush précédent")
                                 .bool_attr("disabled", move || position() == 0)
                                 .on_click(move |_| go(-1))
                                 .html(svg_icon(UP)),
@@ -178,7 +177,7 @@ pub fn clips(_props: &str) -> Node {
                             button()
                                 .class("clips__arrow")
                                 .attr("type", "button")
-                                .attr("aria-label", "Clip suivant")
+                                .attr("aria-label", "Rush suivant")
                                 .bool_attr("disabled", move || position() + 1 >= visible().len())
                                 .on_click(move |_| go(1))
                                 .html(svg_icon(DOWN)),
@@ -203,7 +202,7 @@ fn clip_view(
         .class(format!("clip clip--{}", clip.scene))
         .bool_attr("hidden", move || !visible().contains(&i))
         .class_if("is-current", move || current.get() == i)
-        .attr("aria-label", format!("Clip de @{}", clip.creator))
+        .attr("aria-label", format!("Rush de @{}", clip.creator))
         .on("dblclick", move |_| like(i, false))
         .child(
             div()
@@ -219,7 +218,7 @@ fn clip_view(
                     bursts.with(|b| b[i] > 0 && b[i].is_multiple_of(2))
                 })
                 .attr("aria-hidden", "true")
-                .html(svg_icon(HEART)),
+                .html(svg_icon(SPARK)),
         )
         .child(
             div()
@@ -253,9 +252,9 @@ fn clip_view(
                         .class_if("is-on", move || liked.with(|l| l[i]))
                         .attr("type", "button")
                         .attr_dyn("aria-pressed", move || liked.with(|l| l[i]).to_string())
-                        .attr("aria-label", "J'aime")
+                        .attr("aria-label", "Envoyer un éclat")
                         .on_click(move |_| like(i, true))
-                        .child(span().class("clip__icon").html(svg_icon(HEART)))
+                        .child(span().class("clip__icon").html(svg_icon(SPARK)))
                         .child(span().text_dyn(move || {
                             compact(clip.likes + u32::from(liked.with(|l| l[i])))
                         })),
@@ -296,98 +295,167 @@ fn clip_view(
                     ),
                 ),
         )
+        .child(
+            span()
+                .class("clip__timecode")
+                .attr("aria-hidden", "true")
+                .text(format!("REC 00:00:{:02} · {}", 12 + i * 7, i + 1)),
+        )
         .child(span().class("clip__progress").attr("aria-hidden", "true"))
 }
 
-// ----- Le Fil ------------------------------------------------------------------------------
+// ----- La Planche --------------------------------------------------------------------------
 
+/// Le décor 2D d'un tirage de la planche.
 fn slide_scene(scene: &str) -> &'static str {
     match scene {
         "peaks" => {
-            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><defs><linearGradient id="s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fcd2e4"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs><rect width="400" height="400" fill="url(#s1)"/><circle class="sl-sun" cx="290" cy="150" r="46" fill="#fff7d6"/><path d="M0 330 110 160l70 90 60-80 160 160v70H0z" fill="#7c3aed"/><path d="M0 360 90 260l80 70 70-50 160 80v40H0z" fill="#4c1d95"/><path d="M110 160l-22 34h44zM240 170l-18 26h36z" fill="#fff"/></svg>"##
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#FFB199"/><circle class="sl-sun" cx="290" cy="150" r="46" fill="#FBF8F2"/><path d="M0 330 110 160l70 90 60-80 160 160v70H0z" fill="#1D3FD1"/><path d="M0 360 90 260l80 70 70-50 160 80v40H0z" fill="#132C94"/><path d="M110 160l-22 34h44zM240 170l-18 26h36z" fill="#FBF8F2"/></svg>"##
         }
         "lake" => {
-            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="210" fill="#f9a8d4"/><rect y="210" width="400" height="190" fill="#c084fc"/><circle cx="200" cy="160" r="50" fill="#fff1f2"/><g class="sl-ripples" fill="#fff1f2" fill-opacity=".7"><rect x="150" y="240" width="100" height="6" rx="3"/><rect x="170" y="270" width="60" height="5" rx="2.5"/><rect x="185" y="298" width="30" height="4" rx="2"/></g><path d="M0 210 70 150l50 60z M260 210l70-80 70 80z" fill="#6d28d9"/></svg>"##
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="210" fill="#E7DFD0"/><rect y="210" width="400" height="190" fill="#1D3FD1"/><circle cx="200" cy="160" r="50" fill="#FF5B2E"/><g class="sl-ripples" fill="#F2ECE1" fill-opacity=".8"><rect x="150" y="240" width="100" height="6" rx="3"/><rect x="170" y="270" width="60" height="5" rx="2.5"/><rect x="185" y="298" width="30" height="4" rx="2"/></g><path d="M0 210 70 150l50 60zM260 210l70-80 70 80z" fill="#15130F"/></svg>"##
+        }
+        "night" => {
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#15130F"/><g class="sl-stars" fill="#F2ECE1"><circle cx="40" cy="60" r="2"/><circle cx="120" cy="40" r="1.5"/><circle cx="220" cy="80" r="2.2"/><circle cx="330" cy="50" r="1.6"/><circle cx="300" cy="140" r="1.4"/><circle cx="80" cy="150" r="1.8"/></g><path class="sl-comet" d="M60 100l80 30" stroke="#FF5B2E" stroke-width="3" stroke-linecap="round"/><path d="M0 320 140 230l90 60 170-80v190H0z" fill="#132C94"/><rect x="170" y="280" width="60" height="44" fill="#1D3FD1"/><path d="M160 282l40-30 40 30z" fill="#2E5BFF"/><rect x="192" y="298" width="16" height="16" fill="#FF5B2E"/></svg>"##
+        }
+        "sea" => {
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#1D3FD1"/><circle cx="270" cy="130" r="56" fill="#F2ECE1"/><g class="sl-ripples"><path d="M0 260 Q100 230 200 260 T400 260 V400 H0Z" fill="#132C94"/><path d="M0 300 Q100 275 200 300 T400 300 V400 H0Z" fill="#0B1E6E"/></g></svg>"##
+        }
+        "sun" => {
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#FF5B2E"/><circle class="sl-sun" cx="200" cy="200" r="110" fill="#FFB199"/><circle cx="200" cy="200" r="60" fill="#FBF8F2"/><path d="M0 330h60v-60h50v40h40v-80h50v100h60v-50h50v50h90v70H0z" fill="#15130F"/></svg>"##
+        }
+        "spark" => {
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#15130F"/><path class="sl-spark" d="M200 70c9 70 25 86 95 95-70 9-86 25-95 95-9-70-25-86-95-95 70-9 86-25 95-95z" fill="#F2ECE1"/><path d="M310 60c4 26 9 31 35 35-26 4-31 9-35 35-4-26-9-31-35-35 26-4 31-9 35-35z" fill="#FF5B2E"/></svg>"##
+        }
+        "dunes" => {
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#E7DFD0"/><circle cx="110" cy="120" r="40" fill="#FF5B2E"/><path d="M0 250 Q120 170 250 240 T400 220 V400 H0Z" fill="#C9C1B1"/><path d="M0 300 Q140 240 260 300 T400 290 V400 H0Z" fill="#15130F"/></svg>"##
+        }
+        "window" => {
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#F2ECE1"/><rect x="90" y="60" width="220" height="260" fill="#2E5BFF"/><path d="M200 60v260M90 190h220" stroke="#F2ECE1" stroke-width="12"/><circle class="sl-sun" cx="150" cy="120" r="26" fill="#FF5B2E"/><rect x="60" y="320" width="280" height="20" fill="#15130F"/></svg>"##
         }
         _ => {
-            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#0f0a24"/><g class="sl-stars" fill="#fff"><circle cx="40" cy="60" r="2"/><circle cx="120" cy="40" r="1.5"/><circle cx="220" cy="80" r="2.2"/><circle cx="330" cy="50" r="1.6"/><circle cx="300" cy="140" r="1.4"/><circle cx="80" cy="150" r="1.8"/><circle cx="180" cy="130" r="1.2"/></g><path class="sl-comet" d="M60 100l80 30" stroke="#fde68a" stroke-width="3" stroke-linecap="round"/><path d="M0 320 140 230l90 60 170-80v190H0z" fill="#1e1b4b"/><rect x="170" y="280" width="60" height="44" fill="#312e81"/><path d="M160 282l40-30 40 30z" fill="#4338ca"/><rect x="192" y="298" width="16" height="16" fill="#fbbf24"/></svg>"##
+            r##"<svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="400" height="400" fill="#132C94"/><circle class="sl-sun" cx="260" cy="120" r="54" fill="#F2ECE1"/><circle cx="282" cy="104" r="50" fill="#132C94"/><path d="M0 400V280h50v-40h40v60h50v-90h60v70h40v-40h60v60h50v-30h50v130z" fill="#15130F"/></svg>"##
         }
     }
 }
 
-/// Une publication du Fil : un carrousel de photos à faire glisser, toucher deux
-/// fois pour aimer, enregistrer, et des commentaires.
+/// Le trait de crayon gras qui entoure un tirage choisi.
+const GREASE_MARK: &str = r#"<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M52 6C80 6 96 26 94 52C92 80 66 95 42 92C16 89 3 64 8 40C13 18 32 7 60 10" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></svg>"#;
+
+/// La Planche : les tirages des amis, en planche-contact. On en entoure un au crayon
+/// gras pour l'agrandir ; un éclat ✦ part en privé, sans compteur public.
 pub fn fil(_props: &str) -> Node {
     let n = SLIDES.len();
-    let index = use_state(0usize);
-    let liked = use_state(false);
-    let saved = use_state(false);
+    let picked = use_state(0usize);
+    let sparks = use_state(vec![false; n]);
     let burst = use_state(0u32);
     let start = use_state((0.0f64, 0.0f64));
     let comments = use_state(vec![
-        ("lea".to_owned(), "Magnifique 😍".to_owned()),
-        ("ines.danse".to_owned(), "On y va cet été ?".to_owned()),
+        (
+            0usize,
+            "lea".to_owned(),
+            "On y retourne cet été ?".to_owned(),
+        ),
+        (
+            0usize,
+            "ines.danse".to_owned(),
+            "Cette lumière ✦".to_owned(),
+        ),
     ]);
     let draft = use_state(String::new());
     let go = move |step: i32| {
-        let at = (index.get() as i32 + step).clamp(0, n as i32 - 1);
-        index.set(at as usize);
+        let at = (picked.get() as i32 + step).clamp(0, n as i32 - 1);
+        picked.set(at as usize);
     };
-    let like_once = move || {
-        if !liked.get() {
-            liked.set(true);
+    let spark = move |toggle: bool| {
+        let i = picked.get();
+        let was = sparks.with(|s| s[i]);
+        if toggle || !was {
+            sparks.update(|s| s[i] = !was);
         }
-        burst.update(|b| *b += 1);
+        if !was {
+            burst.update(|b| *b += 1);
+        }
     };
 
     article()
-        .class("fil")
+        .class("planche")
         .child(
             div()
-                .class("fil__head")
+                .class("planche__head")
+                .child(span().class("kicker").text("Planche du jour"))
                 .child(
                     span()
-                        .class("avatar avatar--sm")
-                        .attr("aria-hidden", "true")
-                        .text("S"),
-                )
-                .child(
-                    div().child(strong().text("sam.photo")).child(
-                        span()
-                            .class("muted small")
-                            .text("Refuge des Lacs, Pyrénées"),
-                    ),
+                        .class("planche__count")
+                        .text(format!("{n} tirages de vos amis")),
                 ),
         )
         .child(
             div()
-                .class("fil__media")
+                .class("planche__sheet")
                 .attr("role", "group")
-                .attr("aria-roledescription", "carrousel")
-                .attr("aria-label", "Photos de la publication")
+                .attr("aria-label", "Planche-contact")
+                .child(
+                    span()
+                        .class("planche__edge")
+                        .attr("aria-hidden", "true")
+                        .text("FLASHA 400 ▸ 12 ▸ 12A ▸ 13 ▸ 13A ▸ 14"),
+                )
+                .child(
+                    div()
+                        .class("planche__grid")
+                        .children(
+                            SLIDES
+                                .iter()
+                                .enumerate()
+                                .map(|(i, (scene, alt, _, number))| {
+                                    button()
+                                        .class("planche__frame")
+                                        .class_if("is-picked", move || picked.get() == i)
+                                        .attr("type", "button")
+                                        .attr("aria-label", format!("Vue {number} : {alt}"))
+                                        .attr_dyn("aria-pressed", move || {
+                                            (picked.get() == i).to_string()
+                                        })
+                                        .on_click(move |_| picked.set(i))
+                                        .child(
+                                            span().class("planche__thumb").html(slide_scene(scene)),
+                                        )
+                                        .child(span().class("planche__num").text(*number))
+                                        .child(span().class("planche__mark").html(GREASE_MARK))
+                                }),
+                        ),
+                )
+                .child(
+                    span()
+                        .class("planche__edge")
+                        .attr("aria-hidden", "true")
+                        .text("▸ 14A ▸ 15 ▸ 15A ▸ 16 ▸ FLASHA 400"),
+                ),
+        )
+        .child(
+            div()
+                .class("print")
                 .on("pointerdown", move |e| start.set(pointer(&e)))
                 .on("pointerup", move |e| {
                     if let Some(step) = swipe(start.get(), pointer(&e), false) {
                         go(step);
                     }
                 })
-                .on("dblclick", move |_| like_once())
-                .child(
+                .on("dblclick", move |_| spark(false))
+                .children(SLIDES.iter().enumerate().map(|(i, (scene, alt, _, _))| {
                     div()
-                        .class("fil__track")
-                        .attr_dyn("style", move || format!("--at:{}", index.get()))
-                        .children(SLIDES.iter().enumerate().map(|(i, (scene, alt))| {
-                            div()
-                                .class("fil__slide")
-                                .attr("role", "img")
-                                .attr("aria-label", format!("Photo {} sur {n} : {alt}", i + 1))
-                                .html(slide_scene(scene))
-                        })),
-                )
+                        .class("print__photo")
+                        .bool_attr("hidden", move || picked.get() != i)
+                        .attr("role", "img")
+                        .attr("aria-label", *alt)
+                        .html(slide_scene(scene))
+                }))
                 .child(
                     span()
-                        .class("fil__count")
-                        .text_dyn(move || format!("{}/{n}", index.get() + 1)),
+                        .class("print__date")
+                        .attr("aria-hidden", "true")
+                        .text("11 11 '26"),
                 )
                 .child(
                     span()
@@ -397,100 +465,67 @@ pub fn fil(_props: &str) -> Node {
                             burst.get() > 0 && burst.get().is_multiple_of(2)
                         })
                         .attr("aria-hidden", "true")
-                        .html(svg_icon(HEART)),
+                        .html(svg_icon(SPARK)),
+                ),
+        )
+        .child(
+            div()
+                .class("print__bar")
+                .child(
+                    button()
+                        .class("print__btn print__spark")
+                        .class_if("is-on", move || sparks.with(|s| s[picked.get()]))
+                        .attr("type", "button")
+                        .attr_dyn("aria-pressed", move || {
+                            sparks.with(|s| s[picked.get()]).to_string()
+                        })
+                        .on_click(move |_| spark(true))
+                        .child(span().class("clip__icon").html(svg_icon(SPARK)))
+                        .child(span().text_dyn(move || {
+                            let (_, _, author, _) = SLIDES[picked.get()];
+                            if sparks.with(|s| s[picked.get()]) {
+                                format!("Éclat envoyé à {author}")
+                            } else {
+                                "Envoyer un éclat".to_owned()
+                            }
+                        })),
                 )
                 .child(
                     button()
-                        .class("fil__arrow fil__arrow--prev")
+                        .class("print__btn")
                         .attr("type", "button")
-                        .attr("aria-label", "Photo précédente")
-                        .bool_attr("hidden", move || index.get() == 0)
+                        .attr("aria-label", "Tirage précédent")
+                        .bool_attr("disabled", move || picked.get() == 0)
                         .on_click(move |_| go(-1))
                         .html(svg_icon(LEFT)),
                 )
                 .child(
                     button()
-                        .class("fil__arrow fil__arrow--next")
+                        .class("print__btn")
                         .attr("type", "button")
-                        .attr("aria-label", "Photo suivante")
-                        .bool_attr("hidden", move || index.get() + 1 >= n)
+                        .attr("aria-label", "Tirage suivant")
+                        .bool_attr("disabled", move || picked.get() + 1 >= n)
                         .on_click(move |_| go(1))
                         .html(svg_icon(RIGHT)),
                 ),
         )
         .child(
             div()
-                .class("fil__bar")
-                .child(
-                    button()
-                        .class("fil__btn fil__like")
-                        .class_if("is-on", move || liked.get())
-                        .attr("type", "button")
-                        .attr("aria-label", "J'aime")
-                        .attr_dyn("aria-pressed", move || liked.get().to_string())
-                        .on_click(move |_| {
-                            liked.update(|l| *l = !*l);
-                            if liked.get() {
-                                burst.update(|b| *b += 1);
-                            }
-                        })
-                        .html(svg_icon(HEART)),
-                )
-                .child(
-                    span()
-                        .class("fil__btn")
-                        .attr("aria-hidden", "true")
-                        .html(svg_icon(COMMENT)),
-                )
-                .child(
-                    span()
-                        .class("fil__btn")
-                        .attr("aria-hidden", "true")
-                        .html(svg_icon(SHARE)),
-                )
-                .child(
-                    div()
-                        .class("fil__dots")
-                        .attr("aria-hidden", "true")
-                        .children(
-                            (0..n).map(|i| span().class_if("is-on", move || index.get() == i)),
-                        ),
-                )
-                .child(
-                    button()
-                        .class("fil__btn fil__save")
-                        .class_if("is-on", move || saved.get())
-                        .attr("type", "button")
-                        .attr_dyn("aria-label", move || {
-                            if saved.get() {
-                                "Retirer des favoris"
-                            } else {
-                                "Enregistrer"
-                            }
-                            .to_owned()
-                        })
-                        .attr_dyn("aria-pressed", move || saved.get().to_string())
-                        .on_click(move |_| saved.update(|s| *s = !*s))
-                        .html(svg_icon(SAVE)),
-                ),
-        )
-        .child(
-            div()
-                .class("fil__text")
-                .child(strong().text_dyn(move || {
-                    format!("{} J'aime", compact(2_841 + u32::from(liked.get())))
+                .class("print__text")
+                .child(p().text_dyn(move || {
+                    let (_, alt, author, number) = SLIDES[picked.get()];
+                    format!("{author} · vue {number} — {alt}")
                 }))
-                .child(p().child(strong().text("sam.photo ")).child(
-                    span().text("Trois jours là-haut, sans réseau, et un ciel comme ça 🏔️ #rando"),
-                ))
                 .child(
-                    ul().class("fil__comments")
+                    ul().class("print__comments")
                         .attr("aria-live", "polite")
                         .children_dyn(move || {
+                            let i = picked.get();
                             comments
                                 .get()
                                 .into_iter()
-                                .map(|(who, text)| {
+                                .filter(|(at, _, _)| *at == i)
+                                .map(|(_, who, text)| {
                                     li().child(strong().text(format!("{who} ")))
                                         .child(span().text(text))
                                         .into()
@@ -500,15 +535,12 @@ pub fn fil(_props: &str) -> Node {
                 )
                 .child(
                     form()
-                        .class("fil__form")
+                        .class("print__form")
                         .on_submit(move |_| {
                             let text = draft.with(|d| d.trim().to_owned());
                             if !text.is_empty() {
-                                comments.update(|c| {
-                                    c.push(("vous".to_owned(), text));
-                                    let extra = c.len().saturating_sub(4);
-                                    c.drain(..extra);
-                                });
+                                let i = picked.get();
+                                comments.update(|c| c.push((i, "vous".to_owned(), text)));
                                 draft.set(String::new());
                             }
                         })
@@ -516,7 +548,7 @@ pub fn fil(_props: &str) -> Node {
                             input()
                                 .attr("type", "text")
                                 .attr("name", "comment")
-                                .attr("placeholder", "Ajouter un commentaire…")
+                                .attr("placeholder", "Un mot sur ce tirage…")
                                 .attr("aria-label", "Commentaire")
                                 .attr("autocomplete", "off")
                                 .attr("maxlength", "150")
@@ -524,9 +556,9 @@ pub fn fil(_props: &str) -> Node {
                         )
                         .child(
                             button()
-                                .class("fil__publish")
+                                .class("print__publish")
                                 .attr("type", "submit")
-                                .text("Publier"),
+                                .text("Écrire"),
                         ),
                 ),
         )
