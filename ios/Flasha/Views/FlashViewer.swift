@@ -11,7 +11,13 @@ struct FlashViewer: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Group {
-                if let image = flash.image {
+                if let mediaID = flash.mediaID {
+                    if flash.isVideo == true {
+                        EncryptedVideoPlayer(id: mediaID)
+                    } else {
+                        MediaImage(id: mediaID)
+                    }
+                } else if let image = flash.image {
                     Image(uiImage: image).resizable().scaledToFill()
                 } else {
                     Image(uiImage: .flashaPlaceholder()).resizable().scaledToFill()

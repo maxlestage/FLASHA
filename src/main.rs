@@ -12,6 +12,7 @@ use flasha::{camera, clips, fil, flash, scene, talka};
 use paquets::prelude::*;
 
 mod export;
+mod relay;
 
 const DESCRIPTION: &str = "FLASHA, l'application sociale du partage instantané : caméra, Flashs éphémères, Talka la messagerie, Stories et Découvrir. Sur iOS et Android.";
 
@@ -609,6 +610,11 @@ async fn home(_req: Request) -> Page {
 fn app() -> App {
     let mut app = App::new();
     app.get("/", home);
+    // Le relais sans base : il ne fait que transmettre des paquets chiffrés.
+    let relay = relay::Relay::new(relay::Limits::default());
+    app.get("/relay", move |req: Request| {
+        relay::handler(relay.clone(), req)
+    });
     app.health("/health");
     app.pwa(Pwa::new("FLASHA").theme_color("#0d0618"));
     app

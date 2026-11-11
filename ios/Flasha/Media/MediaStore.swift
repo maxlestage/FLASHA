@@ -95,6 +95,20 @@ nonisolated final class MediaStore: @unchecked Sendable {
         return id
     }
 
+    /// Range une photo reçue, déjà au format FLASHA Photo.
+    func savePhoto(_ data: Data, id: UUID = UUID()) throws -> UUID {
+        try write(data, id: id, kind: .photo)
+        trim()
+        return id
+    }
+
+    /// Range une vidéo reçue, déjà au format FLASHA Vidéo.
+    func saveVideo(_ data: Data, id: UUID = UUID()) throws -> UUID {
+        try write(data, id: id, kind: .video)
+        trim()
+        return id
+    }
+
     // MARK: Épingles
 
     private var pinned: Set<String> {

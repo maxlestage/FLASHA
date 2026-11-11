@@ -21,6 +21,14 @@ nonisolated struct SavedState: Codable, Sendable {
     var showsOnlineStatus: Bool
     var sharesLocation: Bool
     var screenshotAlerts: Bool
+    // Réseau (facultatifs : absents des états enregistrés avant le relais).
+    var relayURL: String?
+    var followerIDs: Set<FlashaID>?
+    var followingIDs: Set<FlashaID>?
+    var requestedIDs: Set<FlashaID>?
+    var requests: [Friend]?
+    var outbox: [Outgoing]?
+    var seenParcels: [UUID]?
 }
 
 extension AppStore {
@@ -42,6 +50,7 @@ extension AppStore {
             store.persist()
         }
         store.autosave()
+        store.startNetwork()
         return store
     }
 
@@ -62,7 +71,14 @@ extension AppStore {
             whoCanCall: whoCanCall,
             showsOnlineStatus: showsOnlineStatus,
             sharesLocation: sharesLocation,
-            screenshotAlerts: screenshotAlerts
+            screenshotAlerts: screenshotAlerts,
+            relayURL: relayURL,
+            followerIDs: followerIDs,
+            followingIDs: followingIDs,
+            requestedIDs: requestedIDs,
+            requests: requests,
+            outbox: outbox,
+            seenParcels: seenParcels
         )
     }
 
@@ -78,6 +94,13 @@ extension AppStore {
         showsOnlineStatus = savedState.showsOnlineStatus
         sharesLocation = savedState.sharesLocation
         screenshotAlerts = savedState.screenshotAlerts
+        relayURL = savedState.relayURL ?? ""
+        followerIDs = savedState.followerIDs ?? []
+        followingIDs = savedState.followingIDs ?? []
+        requestedIDs = savedState.requestedIDs ?? []
+        requests = savedState.requests ?? []
+        outbox = savedState.outbox ?? []
+        seenParcels = savedState.seenParcels ?? []
     }
 
     /// Chiffre et enregistre l'état.
@@ -109,6 +132,11 @@ extension AppStore {
         clips = []
         feed = []
         following = []
+        followerIDs = []
+        followingIDs = []
+        requestedIDs = []
+        requests = []
+        outbox = []
         sentFlashs = 0
         publishedStories = 0
         refreshStorage()

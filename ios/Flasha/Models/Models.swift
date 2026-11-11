@@ -65,6 +65,8 @@ nonisolated struct Friend: Identifiable, Hashable, Codable, Sendable {
     var rgba: RGBA
     var isBestFriend: Bool
     var hasNewStory: Bool
+    /// Son identifiant FLASHA, pour un vrai contact (absent pour les démonstrations).
+    var publicID: FlashaID?
 
     @MainActor
     init(
@@ -100,6 +102,7 @@ nonisolated struct Flash: Identifiable, Codable, Sendable {
     var sentAt: Date
     var opened = false
     var replayed = false
+    var isVideo: Bool?
 
     init(
         from: Friend,
@@ -120,7 +123,7 @@ nonisolated struct Flash: Identifiable, Codable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, from, mediaID, caption, duration, allowsReplay, sentAt, opened, replayed
+        case id, from, mediaID, caption, duration, allowsReplay, sentAt, opened, replayed, isVideo
     }
 
     /// Le Flash peut-il encore être ouvert ?

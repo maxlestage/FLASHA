@@ -1,9 +1,11 @@
 import SwiftUI
+import UIKit
 
 /// Le profil : identité, statistiques privées et confidentialité.
 struct ProfileView: View {
     @Environment(AppStore.self) private var store
     @State private var confirmingErase = false
+    @State private var relayDraft = ""
 
     var body: some View {
         @Bindable var store = store
@@ -26,6 +28,43 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                 }
+
+                Section {
+                    QRCodeView(text: store.myID.string)
+                        .frame(maxWidth: 220)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                    LabeledContent("Empreinte", value: store.myID.fingerprint)
+                        .font(.footnote.monospaced())
+                    Button("Copier mon identifiant", systemImage: "doc.on.doc") {
+                        UIPasteboard.general.string = store.myID.string
+                    }
+                    ShareLink(item: store.myID.string, message: Text("Ajoute-moi sur FLASHA")) {
+                        Label("Partager mon identifiant", systemImage: "square.and.arrow.up")
+                    }
+                } header: {
+                    Text("Mon identifiant FLASHA")
+                } footer: {
+                    Text("Pas d'annuaire : on vous ajoute avec ce QR code ou cet identifiant, qui contient vos clés publiques. Vos clés privées ne quittent jamais ce téléphone.")
+                }
+
+                Section {
+                    TextField("https://flasha.example.com", text: $relayDraft)
+                        .keyboardType(.URL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .onSubmit { store.setRelayURL(relayDraft) }
+                    LabeledContent("État", value: relayStatus)
+                    LabeledContent("Abonnés", value: "\(store.followerIDs.count)")
+                    LabeledContent("En attente d'accusé", value: "\(store.outbox.count)")
+                    Button("Se connecter") { store.setRelayURL(relayDraft) }
+                        .disabled(relayDraft.isEmpty)
+                } header: {
+                    Text("Relais")
+                } footer: {
+                    Text("Le relais ne fait que transmettre des paquets chiffrés de bout en bout : il n'a ni base de données ni disque, et ne peut rien lire. Un paquet reste dans votre boîte d'envoi jusqu'à l'accusé de réception.")
+                }
+                .onAppear { relayDraft = store.relayURL }
 
                 Section("Mes publications") {
                     if store.myPosts.isEmpty {
@@ -122,5 +161,13 @@ struct ProfileView: View {
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var relayStatus: String {
+        switch store.relay.status {
+        case .online: "Connecté"
+        case .connecting: "Connexion…"
+        case .offline: store.relayURL.isEmpty ? "Aucun relais" : "Hors ligne"
+        }
     }
 }

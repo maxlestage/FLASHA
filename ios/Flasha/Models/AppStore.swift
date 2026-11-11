@@ -25,6 +25,23 @@ final class AppStore {
     var sharesLocation = false
     var screenshotAlerts = true
 
+    // Réseau : le relais sans base (voir `Social.swift`).
+    let relay = RelayClient()
+    /// L'adresse du relais, par exemple `https://flasha.example.com`.
+    var relayURL = ""
+    /// Ceux qui me suivent : mes publications leur sont envoyées.
+    var followerIDs: Set<FlashaID> = []
+    /// Ceux que je suis : leurs publications me parviennent.
+    var followingIDs: Set<FlashaID> = []
+    /// Mes demandes en attente de réponse.
+    var requestedIDs: Set<FlashaID> = []
+    /// Les demandes reçues, à accepter ou refuser.
+    var requests: [Friend] = []
+    /// Les paquets envoyés en attente d'accusé de réception.
+    var outbox: [Outgoing] = []
+    /// Les derniers paquets reçus, pour ne pas traiter deux fois le même.
+    var seenParcels: [UUID] = []
+
     init(
         friends: [Friend],
         receivedFlashs: [Flash],
@@ -51,8 +68,8 @@ final class AppStore {
         allowsReplay: Bool,
         to recipients: Set<Friend.ID>
     ) {
-        // Le média, déjà au format FLASHA, est gardé dans le cache et épinglé tant que
-        // l'envoi n'est pas confirmé par le serveur.
+        // Le média, déjà au format FLASHA : lu avant d'être rangé, chiffré, dans le cache.
+        let media = photo?.data ?? video.flatMap { try? Data(contentsOf: $0.url) }
         if let photo {
             _ = try? MediaStore.shared.save(photo, pinned: true)
         } else if let video {
@@ -60,7 +77,17 @@ final class AppStore {
         }
         refreshStorage()
         sentFlashs += recipients.count
+        let payload = FlashPayload(
+            caption: caption,
+            duration: duration,
+            allowsReplay: allowsReplay,
+            isVideo: video != nil,
+            media: media
+        )
         for id in recipients {
+            if let publicID = friends.first(where: { $0.id == id })?.publicID {
+                enqueue(.flash(payload), to: publicID)
+            }
             guard let index = conversations.firstIndex(where: { $0.friend.id == id }) else { continue }
             conversations[index].messages.append(
                 Message(fromMe: true, text: "📸 Flash envoyé (\(duration.label))", date: .now)
@@ -121,6 +148,11 @@ final class AppStore {
               let index = conversations.firstIndex(where: { $0.id == conversationID })
         else { return }
         conversations[index].messages.append(Message(fromMe: true, text: trimmed, date: .now))
+        if let publicID = conversations[index].friend.publicID {
+            // Un vrai contact : le message part, chiffré, par le relais.
+            enqueue(.chat(trimmed), to: publicID)
+            return
+        }
         let reply = replies[conversations[index].messages.count % replies.count]
         Task {
             try? await Task.sleep(for: .seconds(1.2))
