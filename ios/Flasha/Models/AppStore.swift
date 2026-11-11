@@ -9,7 +9,10 @@ final class AppStore {
     var friends: [Friend]
     var receivedFlashs: [Flash]
     var conversations: [Conversation]
-    var posts: [Post]
+    var clips: [Clip]
+    var feed: [FeedPost]
+    /// Les créateurs suivis (abonnements publics, distincts des amis).
+    var following: Set<String> = ["@sam.photo", "@lea"]
     var sentFlashs = 0
     var publishedStories = 0
 
@@ -26,12 +29,14 @@ final class AppStore {
         friends: [Friend],
         receivedFlashs: [Flash],
         conversations: [Conversation],
-        posts: [Post]
+        clips: [Clip],
+        feed: [FeedPost]
     ) {
         self.friends = friends
         self.receivedFlashs = receivedFlashs
         self.conversations = conversations
-        self.posts = posts
+        self.clips = clips
+        self.feed = feed
     }
 
     var bestFriends: [Friend] { friends.filter(\.isBestFriend) }
@@ -106,14 +111,70 @@ final class AppStore {
         friends[index].isBestFriend.toggle()
     }
 
-    // MARK: Découvrir
+    // MARK: Clips
 
-    func toggleLike(_ post: Post) {
-        guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
-        posts[index].liked.toggle()
-        posts[index].likes += posts[index].liked ? 1 : -1
+    func isFollowing(_ creator: String) -> Bool { following.contains(creator) }
+
+    func toggleFollow(_ creator: String) {
+        if following.contains(creator) {
+            following.remove(creator)
+        } else {
+            following.insert(creator)
+        }
     }
-}
+
+    func toggleLike(clip id: Clip.ID) {
+        guard let index = clips.firstIndex(where: { $0.id == id }) else { return }
+        clips[index].liked.toggle()
+        clips[index].likes += clips[index].liked ? 1 : -1
+    }
+
+    func toggleSave(clip id: Clip.ID) {
+        guard let index = clips.firstIndex(where: { $0.id == id }) else { return }
+        clips[index].saved.toggle()
+    }
+
+    func comment(_ text: String, onClip id: Clip.ID) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let index = clips.firstIndex(where: { $0.id == id }) else { return }
+        clips[index].comments.append(Comment(author: me.username, text: trimmed))
+    }
+
+    // MARK: Fil
+
+    func toggleLike(post id: FeedPost.ID) {
+        guard let index = feed.firstIndex(where: { $0.id == id }) else { return }
+        feed[index].liked.toggle()
+        feed[index].likes += feed[index].liked ? 1 : -1
+    }
+
+    /// Le double toucher : il aime, il n'enlève jamais le « J'aime ».
+    func like(post id: FeedPost.ID) {
+        guard let index = feed.firstIndex(where: { $0.id == id }), !feed[index].liked else { return }
+        feed[index].liked = true
+        feed[index].likes += 1
+    }
+
+    func toggleSave(post id: FeedPost.ID) {
+        guard let index = feed.firstIndex(where: { $0.id == id }) else { return }
+        feed[index].saved.toggle()
+    }
+
+    func comment(_ text: String, onPost id: FeedPost.ID) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let index = feed.firstIndex(where: { $0.id == id }) else { return }
+        feed[index].comments.append(Comment(author: me.username, text: trimmed))
+    }
+
+    func publish(caption: String, slides: [Slide]) {
+        feed.insert(
+            FeedPost(author: me, place: nil, caption: caption, slides: slides, likes: 0, comments: [], date: .now),
+            at: 0
+        )
+    }
+
+    /// Mes publications, pour la grille du profil.
+    var myPosts: [FeedPost] { feed.filter { $0.author.id == me.id } }
 
 extension AppStore {
     /// Des données de démonstration.
@@ -143,11 +204,38 @@ extension AppStore {
                 Conversation(friend: noah, messages: []),
                 Conversation(friend: jade, messages: []),
             ],
-            posts: [
-                Post(creator: "@sam.photo", title: "Golden hour à Biarritz", hashtag: "#goldenhour", colors: [Theme.orange, Theme.pink], symbol: "sun.horizon.fill", likes: 1_204),
-                Post(creator: "@lea", title: "Défi : un Flash par heure", hashtag: "#flashachallenge", colors: [Theme.violet, Theme.pink], symbol: "bolt.fill", likes: 892),
-                Post(creator: "@studio.flasha", title: "Nouveaux filtres néon", hashtag: "#neon", colors: [.indigo, Theme.violet], symbol: "sparkles", likes: 5_310),
-                Post(creator: "@jade", title: "Concert ce soir 🎶", hashtag: "#live", colors: [Theme.pink, .red], symbol: "music.note", likes: 431),
+            clips: [
+                Clip(creator: "@sam.photo", caption: "Golden hour sur la plage 🌅 #goldenhour", sound: "Son original — sam.photo", colors: [Theme.orange, Theme.pink], symbol: "sun.horizon.fill", likes: 12_400, comments: [Comment(author: "lea", text: "Cette lumière 😍", likes: 42)], shares: 310),
+                Clip(creator: "@lea", caption: "Défi : un Flash par heure ⚡ #flashachallenge", sound: "Neon Nights — Studio FLASHA", colors: [Theme.violet, Theme.pink], symbol: "bolt.fill", likes: 8_920, comments: [Comment(author: "sam.photo", text: "Je relève le défi !", likes: 12)], shares: 204),
+                Clip(creator: "@ines.danse", caption: "Remix de la chorégraphie de Jade 💃 #remix", sound: "Pulse — Les Ondes", colors: [Theme.pink, .indigo], symbol: "figure.dance", likes: 30_100, comments: [Comment(author: "jade", text: "Trop fort le remix 🔥", likes: 230)], shares: 1_204),
+                Clip(creator: "@noah.cuisine", caption: "Des crêpes en 30 secondes 🥞 #recette", sound: "Son original — noah.cuisine", colors: [.orange, .yellow], symbol: "frying.pan.fill", likes: 5_310, comments: [], shares: 96),
+            ],
+            feed: [
+                FeedPost(
+                    author: sam,
+                    place: "Refuge des Lacs, Pyrénées",
+                    caption: "Trois jours là-haut, sans réseau, et un ciel comme ça 🏔️ #rando",
+                    slides: [
+                        Slide(colors: [Theme.pink, Theme.orange], symbol: "mountain.2.fill"),
+                        Slide(colors: [Theme.violet, Theme.pink], symbol: "water.waves"),
+                        Slide(colors: [.indigo, .black], symbol: "moon.stars.fill"),
+                    ],
+                    likes: 2_841,
+                    comments: [
+                        Comment(author: "lea", text: "Magnifique 😍"),
+                        Comment(author: "ines.danse", text: "On y va cet été ?"),
+                    ],
+                    date: now.addingTimeInterval(-5400)
+                ),
+                FeedPost(
+                    author: lea,
+                    place: nil,
+                    caption: "Nouveau filtre néon testé ce soir ✨",
+                    slides: [Slide(colors: [Theme.violet, .indigo], symbol: "sparkles")],
+                    likes: 512,
+                    comments: [],
+                    date: now.addingTimeInterval(-86_400)
+                ),
             ]
         )
     }

@@ -240,3 +240,87 @@ pub const LABS: [(&str, &str); 6] = [
         "Albums collaboratifs, voyages et anniversaires.",
     ),
 ];
+
+/// Un Clip : une vidéo courte et verticale de Découvrir.
+pub struct Clip {
+    pub creator: &'static str,
+    pub caption: &'static str,
+    pub sound: &'static str,
+    pub likes: u32,
+    pub comments: u32,
+    /// Le décor animé du Clip (classe CSS `clip--…`).
+    pub scene: &'static str,
+}
+
+/// Les Clips de la démonstration. Les deux premiers créateurs sont suivis.
+pub const CLIPS: [Clip; 4] = [
+    Clip {
+        creator: "sam.photo",
+        caption: "Golden hour sur la plage 🌅 #goldenhour",
+        sound: "Son original — sam.photo",
+        likes: 12_400,
+        comments: 318,
+        scene: "sunset",
+    },
+    Clip {
+        creator: "lea",
+        caption: "Défi : un Flash par heure ⚡ #flashachallenge",
+        sound: "Neon Nights — Studio FLASHA",
+        likes: 8_920,
+        comments: 204,
+        scene: "neon",
+    },
+    Clip {
+        creator: "ines.danse",
+        caption: "Remix de la chorégraphie de Jade 💃 #remix",
+        sound: "Pulse — Les Ondes",
+        likes: 30_100,
+        comments: 1_204,
+        scene: "dance",
+    },
+    Clip {
+        creator: "noah.cuisine",
+        caption: "Des crêpes en 30 secondes 🥞 #recette",
+        sound: "Son original — noah.cuisine",
+        likes: 5_310,
+        comments: 96,
+        scene: "food",
+    },
+];
+
+/// Les photos du carrousel de la publication du Fil : (décor, description).
+pub const SLIDES: [(&str, &str); 3] = [
+    ("peaks", "Des montagnes au lever du soleil"),
+    ("lake", "Un lac et des reflets roses"),
+    ("night", "Un ciel étoilé au-dessus du refuge"),
+];
+
+/// Ce que les Clips et le Fil savent faire.
+pub const SOCIAL: [&str; 10] = [
+    "Pour toi et Abonnements",
+    "Sons et musiques autorisés",
+    "Remix et duos",
+    "Défis et hashtags",
+    "Carrousels jusqu'à 10 photos",
+    "Commentaires et réponses",
+    "Enregistrer en favoris",
+    "Partager en Flash ou sur Talka",
+    "Statistiques des créateurs",
+    "Lives et Clips épinglés",
+];
+
+/// `12400` → `12,4 k`, à la française.
+pub fn compact(n: u32) -> String {
+    match n {
+        0..1_000 => n.to_string(),
+        1_000..1_000_000 => {
+            let tenths = n / 100;
+            if tenths.is_multiple_of(10) {
+                format!("{} k", tenths / 10)
+            } else {
+                format!("{},{} k", tenths / 10, tenths % 10)
+            }
+        }
+        _ => format!("{},{} M", n / 1_000_000, (n / 100_000) % 10),
+    }
+}

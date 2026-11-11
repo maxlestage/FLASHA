@@ -16,7 +16,7 @@ struct ProfileView: View {
                         HStack {
                             stat("\(store.friends.count)", "Amis")
                             stat("\(store.sentFlashs)", "Flashs envoyés")
-                            stat("\(store.publishedStories)", "Stories")
+                            stat("\(store.following.count)", "Abonnements")
                         }
                         Text("Vos statistiques ne sont visibles que par vous.")
                             .font(.caption)
@@ -24,6 +24,31 @@ struct ProfileView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
+                }
+
+                Section("Mes publications") {
+                    if store.myPosts.isEmpty {
+                        Text("Publiez depuis le Fil : vos photos apparaissent ici.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2) {
+                            ForEach(store.myPosts) { post in
+                                ZStack {
+                                    LinearGradient(
+                                        colors: post.slides.first?.colors ?? [Theme.violet, Theme.pink],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                    Image(systemName: post.slides.first?.symbol ?? "photo")
+                                        .font(.title)
+                                        .foregroundStyle(.white)
+                                }
+                                .aspectRatio(1, contentMode: .fit)
+                                .accessibilityLabel(post.caption.isEmpty ? "Publication" : post.caption)
+                            }
+                        }
+                        .listRowInsets(EdgeInsets())
+                    }
                 }
 
                 Section("Qui peut…") {

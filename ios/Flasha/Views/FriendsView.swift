@@ -1,72 +1,45 @@
 import SwiftUI
 
-/// Les stories et les Flashs reçus des amis, et la gestion des amis.
+/// Ce que montre l'onglet Amis.
+enum HomeSection: String, CaseIterable, Identifiable {
+    case feed = "Fil"
+    case flashs = "Flashs"
+    case friends = "Amis"
+
+    var id: String { rawValue }
+}
+
+/// L'onglet Amis : le Fil des publications, les Flashs reçus, et les amis.
 struct FriendsView: View {
     @Environment(AppStore.self) private var store
+    @State private var section: HomeSection = .feed
     @State private var openedFlash: Flash?
     @State private var addingFriend = false
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    ScrollView(.horizontal) {
-                        HStack(spacing: 16) {
-                            ForEach(store.friends) { friend in
-                                VStack(spacing: 6) {
-                                    AvatarView(friend: friend, size: 68, showsStoryRing: true)
-                                    Text(friend.name).font(.caption.weight(.semibold))
-                                }
-                            }
-                        }
-                        .padding(.vertical, 6)
-                    }
-                    .scrollIndicators(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-                } header: {
-                    Text("Stories")
-                }
-
-                Section("Flashs reçus") {
-                    if store.receivedFlashs.isEmpty {
-                        ContentUnavailableView("Aucun Flash", systemImage: "bolt.slash", description: Text("Les Flashs de vos amis arrivent ici."))
-                    }
-                    ForEach(store.receivedFlashs) { flash in
-                        Button {
-                            if flash.canOpen { openedFlash = flash }
-                        } label: {
-                            FlashRow(flash: flash)
-                        }
-                        .foregroundStyle(.primary)
-                        .disabled(!flash.canOpen)
-                    }
-                }
-
-                Section("Amis") {
-                    ForEach(store.friends) { friend in
-                        HStack(spacing: 12) {
-                            AvatarView(friend: friend, size: 40)
-                            VStack(alignment: .leading) {
-                                Text(friend.name).font(.headline)
-                                Text("@\(friend.username)").font(.caption).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Button {
-                                withAnimation(.spring) { store.toggleBestFriend(friend) }
-                            } label: {
-                                Image(systemName: friend.isBestFriend ? "star.fill" : "star")
-                                    .foregroundStyle(friend.isBestFriend ? Theme.orange : .secondary)
-                                    .symbolEffect(.bounce, value: friend.isBestFriend)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(friend.isBestFriend ? "Retirer des meilleurs amis" : "Ajouter aux meilleurs amis")
-                        }
-                    }
+            Group {
+                switch section {
+                case .feed: FeedView()
+                case .flashs: flashsList
+                case .friends: friendsList
                 }
             }
-            .navigationTitle("Amis")
+            .safeAreaInset(edge: .top) {
+                Picker("Section", selection: $section.animation(.spring)) {
+                    ForEach(HomeSection.allCases) { Text($0.rawValue).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                .background(.bar)
+            }
+            .navigationTitle(section.rawValue)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                Button("Ajouter un ami", systemImage: "person.badge.plus") { addingFriend = true }
+                if section == .friends {
+                    Button("Ajouter un ami", systemImage: "person.badge.plus") { addingFriend = true }
+                }
             }
             .sheet(isPresented: $addingFriend) {
                 AddFriendView()
@@ -76,6 +49,45 @@ struct FriendsView: View {
             .fullScreenCover(item: $openedFlash) { flash in
                 FlashViewer(flash: flash)
                     .environment(store)
+            }
+        }
+    }
+
+    private var flashsList: some View {
+        List {
+            if store.receivedFlashs.isEmpty {
+                ContentUnavailableView("Aucun Flash", systemImage: "bolt.slash", description: Text("Les Flashs de vos amis arrivent ici."))
+            }
+            ForEach(store.receivedFlashs) { flash in
+                Button {
+                    if flash.canOpen { openedFlash = flash }
+                } label: {
+                    FlashRow(flash: flash)
+                }
+                .foregroundStyle(.primary)
+                .disabled(!flash.canOpen)
+            }
+        }
+    }
+
+    private var friendsList: some View {
+        List(store.friends) { friend in
+            HStack(spacing: 12) {
+                AvatarView(friend: friend, size: 40)
+                VStack(alignment: .leading) {
+                    Text(friend.name).font(.headline)
+                    Text("@\(friend.username)").font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button {
+                    withAnimation(.spring) { store.toggleBestFriend(friend) }
+                } label: {
+                    Image(systemName: friend.isBestFriend ? "star.fill" : "star")
+                        .foregroundStyle(friend.isBestFriend ? Theme.orange : .secondary)
+                        .symbolEffect(.bounce, value: friend.isBestFriend)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(friend.isBestFriend ? "Retirer des meilleurs amis" : "Ajouter aux meilleurs amis")
             }
         }
     }
