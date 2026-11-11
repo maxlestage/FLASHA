@@ -3,6 +3,7 @@ import SwiftUI
 /// Le profil : identité, statistiques privées et confidentialité.
 struct ProfileView: View {
     @Environment(AppStore.self) private var store
+    @State private var confirmingErase = false
 
     var body: some View {
         @Bindable var store = store
@@ -81,9 +82,24 @@ struct ProfileView: View {
                 } header: {
                     Text("Stockage des photos et vidéos")
                 } footer: {
-                    Text("Tout est enregistré au format FLASHA : photos 1080 × 1440 en HEIC, vidéos 1080 × 1920 en HEVC. Au-delà de la limite, les plus anciennes sont effacées en premier ; vos Souvenirs et les envois en cours sont gardés.")
+                    Text("Tout est chiffré et enregistré au format FLASHA : photos 1080 × 1440 en HEIC, vidéos 1080 × 1920 en HEVC. Au-delà de la limite, les plus anciennes sont effacées en premier ; vos Souvenirs et les envois en cours sont gardés.")
                 }
                 .onAppear { store.refreshStorage() }
+
+                Section {
+                    Label("Chiffrées en AES-256 sur cet iPhone", systemImage: "lock.shield.fill")
+                    Label("Aucun serveur, aucune base de données externe", systemImage: "iphone")
+                    Button("Effacer toutes mes données", role: .destructive) { confirmingErase = true }
+                } header: {
+                    Text("Mes données")
+                } footer: {
+                    Text("Profil, abonnements, messages, Flashs et médias sont chiffrés avec une clé créée sur ce téléphone, qui ne le quitte jamais : ni iCloud ni une sauvegarde ne peuvent les relire. Si vous changez d'iPhone, elles ne suivent pas.")
+                }
+                .confirmationDialog("Effacer toutes les données de cet iPhone ?", isPresented: $confirmingErase, titleVisibility: .visible) {
+                    Button("Tout effacer", role: .destructive) { store.eraseEverything() }
+                } message: {
+                    Text("Le coffre et les photos et vidéos chiffrés seront supprimés. C'est définitif.")
+                }
 
                 Section("FLASHA+") {
                     Label("Stockage étendu, filtres exclusifs et outils de création — 4,99 € par mois (prix indicatif).", systemImage: "sparkles")

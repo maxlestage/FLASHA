@@ -1,8 +1,8 @@
 import Observation
 import SwiftUI
 
-/// L'état de l'application. Les données sont locales tant que le serveur n'existe pas
-/// (phase 1 de la feuille de route).
+/// L'état de l'application. Tout reste sur le téléphone, chiffré dans le coffre
+/// (`Vault`) et enregistré après chaque changement (`Persistence.swift`).
 @Observable
 final class AppStore {
     var me = Friend(name: "Moi", username: "moi", color: Theme.pink)

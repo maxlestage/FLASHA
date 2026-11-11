@@ -109,8 +109,8 @@ pub const AUDIENCES: [&str; 5] = [
 pub const PRIVACY: [Card; 6] = [
     Card {
         icon: "lock",
-        title: "Conversations chiffrées",
-        text: "Chiffrement en transit et au repos, et de bout en bout pour les conversations privées, pensé dès l'architecture.",
+        title: "Tout reste sur votre téléphone",
+        text: "Tout est chiffré en AES-256 sur votre téléphone, avec une clé qui ne le quitte jamais. Aucun serveur ne garde vos données.",
     },
     Card {
         icon: "shield",

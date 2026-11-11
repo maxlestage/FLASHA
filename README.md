@@ -87,6 +87,20 @@ Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
 - **Profil** : statistiques privées, grille des publications et contrôles de confidentialité
   (localisation coupée par défaut).
 
+### Données : tout sur le téléphone, tout chiffré
+
+FLASHA ne dépend d'aucun serveur ni d'aucune base de données externe
+(`ios/Flasha/Storage/`) :
+
+- **le coffre** (`Vault`) : une base SQLite sur l'iPhone, où chaque enregistrement est
+  chiffré en AES-256-GCM ; même les noms des enregistrements sont masqués (HMAC-SHA256) ;
+- **les médias** (`MediaStore`) : chaque photo et vidéo est chiffrée de la même façon,
+  aucun fichier n'est écrit en clair ;
+- **la clé** : 256 bits tirés au hasard à la première ouverture, rangés dans le trousseau
+  d'iOS et liés à cet iPhone (ni iCloud ni une sauvegarde ne peuvent relire les données) ;
+- l'état est enregistré automatiquement après chaque changement, et le Profil permet de
+  tout effacer.
+
 ### Les formats FLASHA
 
 Chaque photo et chaque vidéo est convertie automatiquement, sur l'iPhone, avant d'être
