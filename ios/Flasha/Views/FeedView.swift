@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 /// Le Fil : les publications photo des amis et des créateurs suivis.
@@ -79,11 +80,16 @@ struct PostCard: View {
                 TabView(selection: $page) {
                     ForEach(Array(post.slides.enumerated()), id: \.element.id) { index, slide in
                         ZStack {
-                            LinearGradient(colors: slide.colors, startPoint: .topLeading, endPoint: .bottomTrailing)
-                            Image(systemName: slide.symbol)
-                                .font(.system(size: 110))
-                                .foregroundStyle(.white.opacity(0.9))
+                            if let mediaID = slide.mediaID {
+                                MediaImage(id: mediaID)
+                            } else {
+                                LinearGradient(colors: slide.colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+                                Image(systemName: slide.symbol)
+                                    .font(.system(size: 110))
+                                    .foregroundStyle(.white.opacity(0.9))
+                            }
                         }
+                        .clipped()
                         .tag(index)
                         .accessibilityLabel("Photo \(index + 1) sur \(post.slides.count)")
                     }
@@ -182,6 +188,9 @@ private struct ComposePostView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var caption = ""
     @State private var style = 0
+    @State private var items: [PhotosPickerItem] = []
+    @State private var photos: [EncodedPhoto] = []
+    @State private var converting = false
 
     private let styles: [Slide] = [
         Slide(colors: [Theme.violet, Theme.pink], symbol: "sparkles"),
@@ -192,31 +201,72 @@ private struct ComposePostView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Photo") {
-                    Picker("Décor", selection: $style) {
-                        ForEach(styles.indices, id: \.self) { index in
-                            Image(systemName: styles[index].symbol).tag(index)
-                        }
+                Section {
+                    PhotosPicker(selection: $items, maxSelectionCount: 10, matching: .images) {
+                        Label(pickerTitle, systemImage: "photo.on.rectangle.angled")
                     }
-                    .pickerStyle(.segmented)
+                    if converting {
+                        ProgressView("Conversion en FLASHA Photo…")
+                    }
+                    if photos.isEmpty {
+                        Picker("Décor", selection: $style) {
+                            ForEach(styles.indices, id: \.self) { index in
+                                Image(systemName: styles[index].symbol).tag(index)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                } header: {
+                    Text("Photos")
+                } footer: {
+                    Text("Converties en FLASHA Photo (1080 × 1440), chiffrées sur ce téléphone, puis envoyées chiffrées à chacun de vos abonnés.")
                 }
                 Section("Légende") {
                     TextField("Écrire une légende…", text: $caption, axis: .vertical)
                 }
+            }
+            .onChange(of: items) {
+                Task { await convert() }
             }
             .navigationTitle("Nouvelle publication")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Publier") {
-                        store.publish(caption: caption, slides: [styles[style]])
+                        if photos.isEmpty {
+                            store.publish(caption: caption, slides: [styles[style]])
+                        } else {
+                            store.publish(caption: caption, photos: photos)
+                        }
                         dismiss()
                     }
+                    .disabled(converting)
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Annuler") { dismiss() }
                 }
             }
         }
+    }
+
+    private var pickerTitle: String {
+        guard !photos.isEmpty else { return "Choisir des photos" }
+        let bytes = Int64(photos.reduce(0) { $0 + $1.data.count })
+        return "\(photos.count) photo\(photos.count > 1 ? "s" : "") · \(bytes.fileSize)"
+    }
+
+    /// Chaque photo choisie est convertie en FLASHA Photo.
+    private func convert() async {
+        converting = true
+        var result: [EncodedPhoto] = []
+        for item in items {
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let image = UIImage(data: data),
+               let encoded = try? await PhotoEncoder.encode(image) {
+                result.append(encoded)
+            }
+        }
+        photos = result
+        converting = false
     }
 }

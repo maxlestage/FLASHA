@@ -123,9 +123,36 @@ nonisolated final class Vault: @unchecked Sendable {
     }
 }
 
-/// La clé du coffre, dans le trousseau d'iOS.
+/// Les clés de FLASHA, dans le trousseau d'iOS.
 nonisolated enum Keychain {
     private static let account = "app.flasha.vault.key"
+
+    /// Un secret du trousseau, créé par `make` s'il n'existe pas encore. Toujours lié à
+    /// cet iPhone : pas de copie dans iCloud ni dans les sauvegardes.
+    static func secret(_ account: String, make: () -> Data) -> Data {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var item: CFTypeRef?
+        if SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess, let data = item as? Data {
+            return data
+        }
+        let data = make()
+        SecItemDelete([
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: account,
+        ] as CFDictionary)
+        SecItemAdd([
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: account,
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+        ] as CFDictionary, nil)
+        return data
+    }
 
     static func vaultKey() -> SymmetricKey {
         let query: [String: Any] = [

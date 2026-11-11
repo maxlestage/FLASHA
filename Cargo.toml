@@ -13,7 +13,13 @@ crate-type = ["cdylib", "rlib"]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 paquets = { git = "https://github.com/maxlestage/Paquets", tag = "v0.3.2" }
-tokio = { version = "1.54", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.54", features = ["macros", "rt-multi-thread", "sync", "time"] }
+# Le relais : vérification des identités (Ed25519), défis aléatoires, encodage des messages.
+ed25519-dalek = "3.0"
+getrandom = "0.4"
+base64 = "0.23"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 paquets = { git = "https://github.com/maxlestage/Paquets", tag = "v0.3.2", default-features = false, features = ["client"] }

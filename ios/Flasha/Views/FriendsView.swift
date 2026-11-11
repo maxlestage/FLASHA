@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Ce que montre l'onglet Amis.
 enum HomeSection: String, CaseIterable, Identifiable {
@@ -71,12 +72,61 @@ struct FriendsView: View {
     }
 
     private var friendsList: some View {
-        List(store.friends) { friend in
+        List {
+            if !store.requests.isEmpty {
+                Section("Demandes d'abonnement") {
+                    ForEach(store.requests) { request in
+                        HStack(spacing: 10) {
+                            AvatarView(friend: request, size: 40)
+                            VStack(alignment: .leading) {
+                                Text(request.name).font(.headline)
+                                Text(request.publicID?.fingerprint ?? "")
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Button("Refuser") { withAnimation { store.decline(request) } }
+                                .buttonStyle(.bordered)
+                            Button("Accepter") { withAnimation { store.accept(request) } }
+                                .buttonStyle(.borderedProminent)
+                        }
+                    }
+                }
+            }
+            if !store.requestedIDs.isEmpty {
+                Section("Demandes envoyées") {
+                    ForEach(Array(store.requestedIDs), id: \.self) { id in
+                        Label(id.fingerprint, systemImage: "clock")
+                            .font(.footnote.monospaced())
+                    }
+                }
+            }
+            Section("Amis") {
+                ForEach(store.friends) { friend in
+                    friendRow(friend)
+                }
+            }
+        }
+    }
+
+    private func relationship(_ id: FlashaID) -> String {
+        switch (store.followingIDs.contains(id), store.followerIDs.contains(id)) {
+        case (true, true): "Vous vous suivez"
+        case (true, false): "Vous suivez"
+        case (false, true): "Vous suit"
+        case (false, false): "Contact"
+        }
+    }
+
+    private func friendRow(_ friend: Friend) -> some View {
             HStack(spacing: 12) {
                 AvatarView(friend: friend, size: 40)
                 VStack(alignment: .leading) {
                     Text(friend.name).font(.headline)
                     Text("@\(friend.username)").font(.caption).foregroundStyle(.secondary)
+                    if let id = friend.publicID {
+                        Text(relationship(id)).font(.caption2.bold()).foregroundStyle(Theme.pink)
+                    }
                 }
                 Spacer()
                 Button {
@@ -90,7 +140,6 @@ struct FriendsView: View {
                 .accessibilityLabel(friend.isBestFriend ? "Retirer des meilleurs amis" : "Ajouter aux meilleurs amis")
             }
         }
-    }
 }
 
 private struct FlashRow: View {
@@ -125,26 +174,40 @@ private struct FlashRow: View {
 private struct AddFriendView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.dismiss) private var dismiss
-    @State private var username = ""
+    @State private var code = ""
+    @State private var invalid = false
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Par nom d'utilisateur") {
-                    TextField("pseudo", text: $username)
+                Section {
+                    TextField("flasha:…", text: $code, axis: .vertical)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    Button("Ajouter") {
-                        store.addFriend(username: username)
-                        dismiss()
+                        .font(.footnote.monospaced())
+                        .onChange(of: code) { invalid = false }
+                    Button("Coller", systemImage: "doc.on.clipboard") {
+                        code = UIPasteboard.general.string ?? ""
                     }
-                    .disabled(username.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button("Demander à suivre", systemImage: "person.badge.plus") {
+                        if store.follow(code) {
+                            dismiss()
+                        } else {
+                            invalid = true
+                        }
+                    }
+                    .disabled(code.isEmpty)
+                } header: {
+                    Text("Par identifiant FLASHA")
+                } footer: {
+                    Text(invalid
+                        ? "Cet identifiant n'est pas valable."
+                        : "Collez l'identifiant reçu, ou scannez son QR code avec l'appareil photo de l'iPhone. Une demande chiffrée lui est envoyée.")
                 }
-                Section("Autres moyens") {
-                    ShareLink(item: URL(string: "https://flasha.app/add/\(store.me.username)")!) {
-                        Label("Partager mon lien d'invitation", systemImage: "link")
+                Section("Mon identifiant") {
+                    ShareLink(item: store.myID.string, message: Text("Ajoute-moi sur FLASHA")) {
+                        Label("Partager mon identifiant", systemImage: "qrcode")
                     }
-                    Label("Mon QR code personnel", systemImage: "qrcode")
                 }
             }
             .navigationTitle("Ajouter un ami")

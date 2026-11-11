@@ -101,6 +101,31 @@ FLASHA ne dépend d'aucun serveur ni d'aucune base de données externe
 - l'état est enregistré automatiquement après chaque changement, et le Profil permet de
   tout effacer.
 
+### S'abonner sans base de données : le relais
+
+Pour s'abonner et s'échanger publications, Flashs et messages, les téléphones passent par un
+**relais sans base** (`src/relay.rs`, route `/relay` du serveur, en WebSocket) :
+
+- **pas de compte ni d'annuaire** : chaque iPhone crée ses clés (Ed25519 pour signer, X25519
+  pour chiffrer) ; son **identifiant FLASHA** (`flasha:…`) se partage par QR code ou par lien
+  (Profil) ;
+- **chiffré de bout en bout** : chaque paquet est chiffré pour son seul destinataire (X25519 +
+  HKDF-SHA256 + ChaCha20-Poly1305, une clé par paquet) et signé par l'expéditeur
+  (`Network/Sealing.swift`) ; le relais ne peut rien lire ;
+- **rien sur disque** : le relais garde un paquet en mémoire vive tant que son destinataire est
+  hors ligne (72 heures au plus, dans des limites de taille), puis l'oublie ; le téléphone qui
+  l'a envoyé le garde dans sa boîte d'envoi chiffrée jusqu'à l'**accusé de réception**, et le
+  renvoie si besoin ;
+- **identités vérifiées** : à la connexion, le téléphone signe un défi aléatoire ; le relais
+  garantit l'expéditeur de chaque paquet, et le destinataire vérifie sa signature ;
+- s'abonner : « Ajouter un ami » → identifiant → demande chiffrée → la personne accepte dans
+  l'onglet Amis → ses publications du Fil arrivent.
+
+Le relais fait partie du serveur Rust : il tourne partout où le serveur tourne (Heroku avec le
+secret `HEROKU_API_KEY` et la variable `HEROKU_APP_NAME`, ou tout hébergeur Docker), sans base ni
+disque. Son adresse se règle dans l'app (Profil → Relais). GitHub Pages, qui ne sert que des
+fichiers, héberge le site mais pas le relais.
+
 ### Les formats FLASHA
 
 Chaque photo et chaque vidéo est convertie automatiquement, sur l'iPhone, avant d'être
