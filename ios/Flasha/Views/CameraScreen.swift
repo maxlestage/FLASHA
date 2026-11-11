@@ -16,6 +16,8 @@ struct CameraScreen: View {
     @State private var recording = false
     @State private var recordProgress: CGFloat = 0
     @State private var captured: CapturedPhoto?
+    @State private var recorded: EncodedVideo?
+    @State private var converting = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -47,6 +49,21 @@ struct CameraScreen: View {
             }
         }
         .onDisappear { controller.stop() }
+        .overlay {
+            if converting {
+                VStack(spacing: 12) {
+                    ProgressView().controlSize(.large).tint(.white)
+                    Text("Conversion en FLASHA Vidéo…").font(.headline)
+                }
+                .foregroundStyle(.white)
+                .padding(28)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+            }
+        }
+        .fullScreenCover(item: $recorded) { video in
+            VideoEditorView(video: video)
+                .environment(store)
+        }
         .fullScreenCover(item: $captured) { photo in
             EditorView(image: photo.image)
                 .environment(store)
@@ -202,18 +219,28 @@ struct CameraScreen: View {
         }
     }
 
-    // L'enregistrement vidéo (AVCaptureMovieFileOutput) arrive avec l'éditeur vidéo ;
-    // en attendant, l'appui long montre la progression de l'enregistrement.
+    // L'appui long filme ; au relâchement, la vidéo est convertie en FLASHA Vidéo.
     private func startRecording() {
         recording = true
         recordProgress = 0
-        withAnimation(.linear(duration: 15)) { recordProgress = 1 }
+        withAnimation(.linear(duration: FlashaFormat.Video.maxDuration)) { recordProgress = 1 }
+        if authorized && CameraController.isAvailable {
+            controller.startRecording()
+        }
     }
 
     private func stopRecording() {
         guard recording else { return }
         recording = false
         withAnimation(.easeOut(duration: 0.2)) { recordProgress = 0 }
+        Task {
+            guard let raw = await controller.stopRecording() else { return }
+            converting = true
+            let destination = MediaStore.shared.temporaryURL(kind: .video)
+            recorded = try? await VideoEncoder.encode(raw, to: destination)
+            converting = false
+            try? FileManager.default.removeItem(at: raw)
+        }
     }
 }
 

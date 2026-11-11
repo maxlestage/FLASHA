@@ -13,6 +13,7 @@ struct EditorView: View {
     @State private var duration: FlashDuration = .five
     @State private var allowsReplay = true
     @State private var choosingRecipients = false
+    @State private var encoded: EncodedPhoto?
     @FocusState private var captionFocused: Bool
 
     var body: some View {
@@ -61,6 +62,10 @@ struct EditorView: View {
                 }
                 .padding(.horizontal)
 
+                FormatBadge(text: encoded.map {
+                    "FLASHA Photo · 1080 × 1440 · \(Int64($0.data.count).fileSize)"
+                } ?? "Conversion en FLASHA Photo…")
+
                 Spacer()
 
                 VStack(spacing: 14) {
@@ -82,9 +87,14 @@ struct EditorView: View {
                 .padding(.horizontal, 12)
             }
         }
+        .task(id: filter) {
+            encoded = try? await PhotoEncoder.encode(filtered ?? image)
+        }
         .sheet(isPresented: $choosingRecipients) {
             RecipientsView(
                 image: filtered ?? image,
+                photo: encoded,
+                video: nil,
                 caption: caption,
                 duration: duration,
                 allowsReplay: allowsReplay
@@ -98,6 +108,7 @@ struct EditorView: View {
     }
 
     private func choose(_ newFilter: PhotoFilter) {
+        encoded = nil
         filter = newFilter
         filtered = newFilter == .natural ? nil : newFilter.apply(to: image)
     }
@@ -134,7 +145,9 @@ struct EditorView: View {
 
 /// Le choix des destinataires d'un Flash, meilleurs amis en premier.
 struct RecipientsView: View {
-    let image: UIImage
+    let image: UIImage?
+    var photo: EncodedPhoto?
+    var video: EncodedVideo?
     let caption: String
     let duration: FlashDuration
     let allowsReplay: Bool
@@ -160,7 +173,7 @@ struct RecipientsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
                 Button {
-                    store.send(image: image, caption: caption, duration: duration, allowsReplay: allowsReplay, to: selection)
+                    store.send(photo: photo, video: video, caption: caption, duration: duration, allowsReplay: allowsReplay, to: selection)
                     withAnimation(.spring) { sent = true }
                     Task {
                         try? await Task.sleep(for: .seconds(0.8))
@@ -203,5 +216,21 @@ struct RecipientsView: View {
             }
         }
         .foregroundStyle(.primary)
+    }
+}
+
+/// L'étiquette du format FLASHA et du poids du fichier.
+struct FormatBadge: View {
+    let text: String
+
+    var body: some View {
+        Label(text, systemImage: "bolt.badge.checkmark.fill")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(.black.opacity(0.45), in: Capsule())
+            .contentTransition(.numericText())
+            .animation(.spring, value: text)
     }
 }

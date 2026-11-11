@@ -72,7 +72,8 @@ BASE_PATH=/FLASHA cargo run --release -- export dist
 
 Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
 
-- s'ouvre sur la **caméra** plein écran : photo d'un appui court, appui long pour filmer, flash
+- s'ouvre sur la **caméra** plein écran : photo d'un appui court, appui long pour filmer
+  (vidéo convertie en FLASHA Vidéo au relâchement), flash
   auto/activé/désactivé, caméra avant/arrière, zoom au pincement, mise au point tactile, grille ;
 - **éditeur** : filtres Core Image, texte, durée du Flash, relecture autorisée, choix des
   destinataires (meilleurs amis en premier) ;
@@ -85,6 +86,27 @@ Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
   aimer, commenter, enregistrer, partager, disque du son qui tourne ;
 - **Profil** : statistiques privées, grille des publications et contrôles de confidentialité
   (localisation coupée par défaut).
+
+### Les formats FLASHA
+
+Chaque photo et chaque vidéo est convertie automatiquement, sur l'iPhone, avant d'être
+enregistrée ou envoyée : une seule taille pour tout le monde, aussi légère que possible
+sans perte visible sur l'écran d'un téléphone (`ios/Flasha/Media/`).
+
+| Format | Dimensions | Encodage | Poids indicatif |
+|---|---|---|---|
+| **FLASHA Photo** | 1080 × 1440 (3:4) | HEIC, qualité 0,6, sRGB, sans métadonnées ni GPS | ≈ 150 à 300 Ko |
+| Miniature | 270 × 360 | HEIC, qualité 0,5 | ≈ 10 Ko |
+| **FLASHA Vidéo** | 1080 × 1920 (9:16), 30 i/s | HEVC 2,5 Mbit/s, image clé toutes les 2 s, AAC stéréo 96 kbit/s, Rec. 709, 60 s au plus | ≈ 19 Mo la minute |
+
+Les fichiers restent du HEIC et du MP4 standards : la puce de l'iPhone les encode et les
+décode elle-même (rapide, économe en batterie), et ils se lisent partout. Ce qui ne remplit
+pas le format est recadré au centre. Les photos sont affichées sans être décodées en entier
+(seulement à la taille de l'écran), ce qui économise aussi la mémoire vive.
+
+Sur le téléphone, une limite de place (1 Go par défaut, réglable dans le Profil) s'applique :
+au-delà, les photos et vidéos les plus anciennes sont effacées en premier ; les Souvenirs et
+les envois en cours sont gardés.
 
 Sur le simulateur, qui n'a pas de caméra, une photo de démonstration remplace la capture.
 Les données sont locales : le serveur, les appels et l'enregistrement vidéo arrivent avec les

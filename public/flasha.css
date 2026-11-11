@@ -2652,3 +2652,48 @@ button {
   display: grid;
   place-items: center;
 }
+
+/* ----- Formats FLASHA ----- */
+
+.formats {
+  display: grid;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.format {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+
+.format__size {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  font-weight: 900;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.format p {
+  color: var(--muted);
+}
+
+.format__weight {
+  justify-self: start;
+  padding: 4px 12px;
+  border-radius: 14px;
+  background: var(--grad);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+@media (min-width: 640px) {
+  .formats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

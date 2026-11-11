@@ -5,8 +5,8 @@
 //!     paquets dev      # http://localhost:3000
 
 use flasha::content::{
-    AUDIENCES, Card, EDGE, EDITOR, EXPERIENCES, LABS, PLANS, PRIVACY, ROADMAP, SOCIAL, STORIES,
-    TALKA,
+    AUDIENCES, Card, EDGE, EDITOR, EXPERIENCES, FORMATS, LABS, PLANS, PRIVACY, ROADMAP, SOCIAL,
+    STORIES, TALKA,
 };
 use flasha::{camera, clips, fil, flash, scene, talka};
 use paquets::prelude::*;
@@ -246,6 +246,20 @@ fn camera_section() -> Element {
                         ),
                 )
                 .child(div().class("demo").attr("data-reveal", "").child(island("camera", "", camera))),
+        )
+        .child(
+            div().class("wrap formats").children(FORMATS.iter().enumerate().map(
+                |(i, (name, size, details, weight))| {
+                    article()
+                        .class("format")
+                        .attr("data-reveal", "")
+                        .style(format!("--i:{i}"))
+                        .child(span().class("kicker").text(*name))
+                        .child(strong().class("format__size").text(*size))
+                        .child(p().text(*details))
+                        .child(span().class("format__weight").text(*weight))
+                },
+            )),
         )
         .child(
             div()

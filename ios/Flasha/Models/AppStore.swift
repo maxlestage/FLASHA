@@ -43,7 +43,22 @@ final class AppStore {
 
     // MARK: Flashs
 
-    func send(image: UIImage?, caption: String, duration: FlashDuration, allowsReplay: Bool, to recipients: Set<Friend.ID>) {
+    func send(
+        photo: EncodedPhoto?,
+        video: EncodedVideo?,
+        caption: String,
+        duration: FlashDuration,
+        allowsReplay: Bool,
+        to recipients: Set<Friend.ID>
+    ) {
+        // Le média, déjà au format FLASHA, est gardé dans le cache et épinglé tant que
+        // l'envoi n'est pas confirmé par le serveur.
+        if let photo {
+            _ = try? MediaStore.shared.save(photo, pinned: true)
+        } else if let video {
+            _ = try? MediaStore.shared.save(video, pinned: true)
+        }
+        refreshStorage()
         sentFlashs += recipients.count
         for id in recipients {
             guard let index = conversations.firstIndex(where: { $0.friend.id == id }) else { continue }
@@ -51,6 +66,34 @@ final class AppStore {
                 Message(fromMe: true, text: "📸 Flash envoyé (\(duration.label))", date: .now)
             )
         }
+    }
+
+    // MARK: Stockage
+
+    /// La place prise par les photos et vidéos sur le téléphone.
+    var mediaBytes: Int64 = MediaStore.shared.usedBytes
+
+    /// La limite : au-delà, les médias les plus anciens sont effacés en premier.
+    var mediaQuota: Int64 = MediaStore.shared.quota
+
+    func setMediaQuota(_ quota: Int64) {
+        mediaQuota = quota
+        MediaStore.shared.quota = quota
+        trimMedia()
+    }
+
+    func trimMedia() {
+        MediaStore.shared.trim()
+        refreshStorage()
+    }
+
+    func clearMediaCache() {
+        MediaStore.shared.removeUnpinned()
+        refreshStorage()
+    }
+
+    func refreshStorage() {
+        mediaBytes = MediaStore.shared.usedBytes
     }
 
     func markOpened(_ flash: Flash) {
