@@ -7,14 +7,14 @@ import SwiftUI
 final class AppStore {
     var me = Friend(name: "Moi", username: "moi", color: Theme.pink)
     var friends: [Friend]
-    var receivedSnaps: [Snap]
+    var receivedFlashs: [Flash]
     var conversations: [Conversation]
     var posts: [Post]
-    var sentSnaps = 0
+    var sentFlashs = 0
     var publishedStories = 0
 
     // Confidentialité : tout est restreint par défaut, la localisation coupée.
-    var whoCanSendSnaps: Audience = .friends
+    var whoCanSendFlashs: Audience = .friends
     var whoCanMessage: Audience = .friends
     var whoCanSeeStories: Audience = .friends
     var whoCanCall: Audience = .bestFriends
@@ -24,43 +24,43 @@ final class AppStore {
 
     init(
         friends: [Friend],
-        receivedSnaps: [Snap],
+        receivedFlashs: [Flash],
         conversations: [Conversation],
         posts: [Post]
     ) {
         self.friends = friends
-        self.receivedSnaps = receivedSnaps
+        self.receivedFlashs = receivedFlashs
         self.conversations = conversations
         self.posts = posts
     }
 
     var bestFriends: [Friend] { friends.filter(\.isBestFriend) }
 
-    // MARK: Snaps
+    // MARK: Flashs
 
-    func send(image: UIImage?, caption: String, duration: SnapDuration, allowsReplay: Bool, to recipients: Set<Friend.ID>) {
-        sentSnaps += recipients.count
+    func send(image: UIImage?, caption: String, duration: FlashDuration, allowsReplay: Bool, to recipients: Set<Friend.ID>) {
+        sentFlashs += recipients.count
         for id in recipients {
             guard let index = conversations.firstIndex(where: { $0.friend.id == id }) else { continue }
             conversations[index].messages.append(
-                Message(fromMe: true, text: "📸 Snap envoyé (\(duration.label))", date: .now)
+                Message(fromMe: true, text: "📸 Flash envoyé (\(duration.label))", date: .now)
             )
         }
     }
 
-    func markOpened(_ snap: Snap) {
-        guard let index = receivedSnaps.firstIndex(where: { $0.id == snap.id }) else { return }
-        if receivedSnaps[index].opened {
-            receivedSnaps[index].replayed = true
+    func markOpened(_ flash: Flash) {
+        guard let index = receivedFlashs.firstIndex(where: { $0.id == flash.id }) else { return }
+        if receivedFlashs[index].opened {
+            receivedFlashs[index].replayed = true
         } else {
-            receivedSnaps[index].opened = true
+            receivedFlashs[index].opened = true
         }
     }
 
     // MARK: Talka
 
     private let replies = [
-        "Trop bien ! Envoie-moi un Snap 📸",
+        "Trop bien ! Envoie-moi un Flash 📸",
         "Je t'appelle en vidéo dans 5 min ?",
         "Ajouté à notre album Talka Moments ✨",
         "Haha 😂 j'adore",
@@ -127,9 +127,9 @@ extension AppStore {
         let now = Date.now
         return AppStore(
             friends: friends,
-            receivedSnaps: [
-                Snap(from: lea, image: nil, caption: "Coucou ✨", duration: .five, allowsReplay: true, sentAt: now.addingTimeInterval(-300)),
-                Snap(from: sam, image: nil, caption: "Le coucher de soleil 🌅", duration: .ten, allowsReplay: false, sentAt: now.addingTimeInterval(-3600)),
+            receivedFlashs: [
+                Flash(from: lea, image: nil, caption: "Coucou ✨", duration: .five, allowsReplay: true, sentAt: now.addingTimeInterval(-300)),
+                Flash(from: sam, image: nil, caption: "Le coucher de soleil 🌅", duration: .ten, allowsReplay: false, sentAt: now.addingTimeInterval(-3600)),
             ],
             conversations: [
                 Conversation(friend: lea, messages: [
@@ -145,7 +145,7 @@ extension AppStore {
             ],
             posts: [
                 Post(creator: "@sam.photo", title: "Golden hour à Biarritz", hashtag: "#goldenhour", colors: [Theme.orange, Theme.pink], symbol: "sun.horizon.fill", likes: 1_204),
-                Post(creator: "@lea", title: "Défi : un Snap par heure", hashtag: "#flashachallenge", colors: [Theme.violet, Theme.pink], symbol: "bolt.fill", likes: 892),
+                Post(creator: "@lea", title: "Défi : un Flash par heure", hashtag: "#flashachallenge", colors: [Theme.violet, Theme.pink], symbol: "bolt.fill", likes: 892),
                 Post(creator: "@studio.flasha", title: "Nouveaux filtres néon", hashtag: "#neon", colors: [.indigo, Theme.violet], symbol: "sparkles", likes: 5_310),
                 Post(creator: "@jade", title: "Concert ce soir 🎶", hashtag: "#live", colors: [Theme.pink, .red], symbol: "music.note", likes: 431),
             ]

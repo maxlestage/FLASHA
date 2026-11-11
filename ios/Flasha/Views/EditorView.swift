@@ -10,7 +10,7 @@ struct EditorView: View {
     @State private var filtered: UIImage?
     @State private var caption = ""
     @State private var editingCaption = false
-    @State private var duration: SnapDuration = .five
+    @State private var duration: FlashDuration = .five
     @State private var allowsReplay = true
     @State private var choosingRecipients = false
     @FocusState private var captionFocused: Bool
@@ -65,7 +65,7 @@ struct EditorView: View {
 
                 VStack(spacing: 14) {
                     chips(PhotoFilter.allCases, selected: filter, label: \.rawValue) { choose($0) }
-                    chips(SnapDuration.allCases, selected: duration, label: \.label) { duration = $0 }
+                    chips(FlashDuration.allCases, selected: duration, label: \.label) { duration = $0 }
                     Toggle("Autoriser une relecture", isOn: $allowsReplay)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
@@ -132,11 +132,11 @@ struct EditorView: View {
     }
 }
 
-/// Le choix des destinataires d'un Snap, meilleurs amis en premier.
+/// Le choix des destinataires d'un Flash, meilleurs amis en premier.
 struct RecipientsView: View {
     let image: UIImage
     let caption: String
-    let duration: SnapDuration
+    let duration: FlashDuration
     let allowsReplay: Bool
     let onSent: () -> Void
 

@@ -15,7 +15,7 @@ struct ProfileView: View {
                         Text("@\(store.me.username)").foregroundStyle(.secondary)
                         HStack {
                             stat("\(store.friends.count)", "Amis")
-                            stat("\(store.sentSnaps)", "Snaps envoyés")
+                            stat("\(store.sentFlashs)", "Flashs envoyés")
                             stat("\(store.publishedStories)", "Stories")
                         }
                         Text("Vos statistiques ne sont visibles que par vous.")
@@ -27,7 +27,7 @@ struct ProfileView: View {
                 }
 
                 Section("Qui peut…") {
-                    Picker("M'envoyer un Snap", selection: $store.whoCanSendSnaps) { audiences }
+                    Picker("M'envoyer un Flash", selection: $store.whoCanSendFlashs) { audiences }
                     Picker("M'écrire sur Talka", selection: $store.whoCanMessage) { audiences }
                     Picker("Voir mes Stories", selection: $store.whoCanSeeStories) { audiences }
                     Picker("M'appeler", selection: $store.whoCanCall) { audiences }
@@ -40,7 +40,7 @@ struct ProfileView: View {
                 } header: {
                     Text("Confidentialité")
                 } footer: {
-                    Text("La localisation est désactivée par défaut. Une capture d'écran n'est pas toujours détectable, et un Snap peut être photographié par un autre appareil.")
+                    Text("La localisation est désactivée par défaut. Une capture d'écran n'est pas toujours détectable, et un Flash peut être photographié par un autre appareil.")
                 }
 
                 Section("FLASHA+") {

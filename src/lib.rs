@@ -13,9 +13,9 @@ mod scene;
 
 /// Chaque îlot, sous le nom donné à [`island`].
 pub const ISLANDS: [(&str, paquets::active::IslandFn); 4] = [
-    ("flash", flash),
+    ("scene", scene),
     ("camera", camera),
-    ("snap", snap),
+    ("flash", flash),
     ("talka", talka),
 ];
 
@@ -23,7 +23,7 @@ pub const ISLANDS: [(&str, paquets::active::IslandFn); 4] = [
 
 /// L'écran du téléphone : une scène 2D de bulles de lumière qui montent, et un
 /// éclat de particules à chaque toucher.
-pub fn flash(_props: &str) -> Node {
+pub fn scene(_props: &str) -> Node {
     canvas()
         .class("flash-canvas")
         .attr("role", "img")
@@ -191,9 +191,9 @@ const SCENE_SVG: &str = r##"<svg viewBox="0 0 320 400" preserveAspectRatio="xMid
 <g class="sc-waves" stroke="#ff9bd2" stroke-opacity=".5" stroke-width="2" fill="none"><path d="M20 365 q20 -8 40 0 t40 0"/><path d="M180 375 q20 -8 40 0 t40 0"/></g>
 </svg>"##;
 
-// ----- Les Snaps -----------------------------------------------------------------------
+// ----- Les Flashs -----------------------------------------------------------------------
 
-/// Les durées d'expiration d'un Snap : (libellé, secondes ; 0 = sans limite).
+/// Les durées d'expiration d'un Flash : (libellé, secondes ; 0 = sans limite).
 pub const DURATIONS: [(&str, u32); 6] = [
     ("1 s", 1),
     ("3 s", 3),
@@ -203,9 +203,9 @@ pub const DURATIONS: [(&str, u32); 6] = [
     ("∞", 0),
 ];
 
-/// Un Snap de démonstration : choisir sa durée, l'ouvrir, le voir expirer, et
+/// Un Flash de démonstration : choisir sa durée, l'ouvrir, le voir expirer, et
 /// le revoir une fois si l'expéditeur l'autorise.
-pub fn snap(_props: &str) -> Node {
+pub fn flash(_props: &str) -> Node {
     let chosen = use_state(2usize);
     // 0 : pas encore ouvert, 1 : ouvert, 2 : expiré.
     let phase = use_state(0u8);
@@ -220,7 +220,7 @@ pub fn snap(_props: &str) -> Node {
     };
 
     div()
-        .class("snapdemo")
+        .class("flashdemo")
         .child(
             div()
                 .class("chips")
@@ -254,32 +254,32 @@ pub fn snap(_props: &str) -> Node {
         )
         .child(
             div()
-                .class("snapdemo__stage")
+                .class("flashdemo__stage")
                 .class_if("is-open", move || phase.get() == 1)
                 .class_if("is-expired", move || phase.get() == 2)
                 .child(
                     div()
-                        .class("snapdemo__closed")
+                        .class("flashdemo__closed")
                         .bool_attr("hidden", move || phase.get() != 0)
-                        .child(span().class("snapdemo__badge").attr("aria-hidden", "true"))
-                        .child(strong().text("Nouveau Snap de Léa"))
+                        .child(span().class("flashdemo__badge").attr("aria-hidden", "true"))
+                        .child(strong().text("Nouveau Flash de Léa"))
                         .child(
                             button()
                                 .class("btn btn--primary")
                                 .attr("type", "button")
                                 .on_click(move |_| open())
-                                .text("Ouvrir le Snap"),
+                                .text("Ouvrir le Flash"),
                         ),
                 )
                 .child(
                     div()
-                        .class("snapdemo__open")
+                        .class("flashdemo__open")
                         .bool_attr("hidden", move || phase.get() != 1)
                         .child(
                             div()
-                                .class("snapdemo__photo")
+                                .class("flashdemo__photo")
                                 .attr("aria-hidden", "true")
-                                .html(SNAP_SVG),
+                                .html(FLASH_SVG),
                         )
                         .child(
                             span()
@@ -300,19 +300,19 @@ pub fn snap(_props: &str) -> Node {
                         )
                         .child(
                             button()
-                                .class("snapdemo__close")
+                                .class("flashdemo__close")
                                 .attr("type", "button")
-                                .attr("aria-label", "Fermer le Snap")
+                                .attr("aria-label", "Fermer le Flash")
                                 .on_click(move |_| phase.set(2))
                                 .text("✕"),
                         ),
                 )
                 .child(
                     div()
-                        .class("snapdemo__gone")
+                        .class("flashdemo__gone")
                         .bool_attr("hidden", move || phase.get() != 2)
                         .attr("aria-live", "polite")
-                        .child(strong().text("Snap expiré"))
+                        .child(strong().text("Flash expiré"))
                         .child(p().class("muted").text_dyn(move || {
                             if replay.get() && !replayed.get() {
                                 "L'expéditeur autorise une relecture."
@@ -342,15 +342,15 @@ pub fn snap(_props: &str) -> Node {
                                     phase.set(0);
                                     replayed.set(false);
                                 })
-                                .text("Recevoir un autre Snap"),
+                                .text("Recevoir un autre Flash"),
                         ),
                 ),
         )
         .into()
 }
 
-/// La photo du Snap de démonstration.
-const SNAP_SVG: &str = r##"<svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice" focusable="false">
+/// La photo du Flash de démonstration.
+const FLASH_SVG: &str = r##"<svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid slice" focusable="false">
 <defs><linearGradient id="sn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset=".5" stop-color="#ec4899"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs>
 <rect width="300" height="300" fill="url(#sn)"/>
 <g class="sn-confetti"><rect x="40" y="40" width="10" height="18" rx="3" fill="#fde68a"/><rect x="230" y="60" width="10" height="18" rx="3" fill="#fff" transform="rotate(30 235 69)"/><circle cx="70" cy="230" r="7" fill="#fff"/><circle cx="250" cy="220" r="6" fill="#fde68a"/></g>
@@ -367,7 +367,7 @@ type Message = (bool, String);
 
 /// Les réponses de Léa, à tour de rôle.
 pub const REPLIES: [&str; 5] = [
-    "Trop bien ! Envoie-moi un Snap 📸",
+    "Trop bien ! Envoie-moi un Flash 📸",
     "Je t'appelle en vidéo dans 5 min ?",
     "Ajouté à notre album Talka Moments ✨",
     "Haha 😂 j'adore",

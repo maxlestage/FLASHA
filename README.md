@@ -3,7 +3,7 @@
 **Capture. Share. Connect.** — le partage instantané, autrement. 📸
 
 FLASHA est une application sociale mobile centrée sur la photo, la vidéo, les conversations
-instantanées et le partage de moments éphémères : une caméra au centre, des Snaps, **Talka** la
+instantanées et le partage de moments éphémères : une caméra au centre, des Flashs, **Talka** la
 messagerie, des Stories et un espace Découvrir.
 
 Ce dépôt contient :
@@ -23,7 +23,7 @@ puis élargi par `min-width`. Aucune largeur fixe ne dépasse l'écran, rien ne 
   moteur ECS de Paquets (`Camera2d`, `Mesh2d`, `ColorMaterial`) dans le canvas d'un îlot.
 - **Îlots interactifs** (`src/lib.rs`), écrits en Rust et compilés en WebAssembly :
   - la caméra : filtres, photo ou vidéo, déclencheur qui fait un vrai flash ;
-  - le Snap : durée d'affichage (1 s à ∞), compte à rebours, expiration et relecture autorisée ;
+  - le Flash : durée d'affichage (1 s à ∞), compte à rebours, expiration et relecture autorisée ;
   - Talka : une conversation où Léa répond, avec l'indicateur « en train d'écrire ».
 - **Animations** en CSS : apparitions au défilement (`animation-timeline: view()`, sans
   JavaScript), téléphone flottant, bande défilante des outils de l'éditeur, anneaux de stories,
@@ -70,9 +70,9 @@ Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
 
 - s'ouvre sur la **caméra** plein écran : photo d'un appui court, appui long pour filmer, flash
   auto/activé/désactivé, caméra avant/arrière, zoom au pincement, mise au point tactile, grille ;
-- **éditeur** : filtres Core Image, texte, durée du Snap, relecture autorisée, choix des
+- **éditeur** : filtres Core Image, texte, durée du Flash, relecture autorisée, choix des
   destinataires (meilleurs amis en premier) ;
-- **Amis** : stories, Snaps reçus qui expirent après la durée choisie, meilleurs amis, ajout
+- **Amis** : stories, Flashs reçus qui expirent après la durée choisie, meilleurs amis, ajout
   par pseudo ou lien d'invitation ;
 - **Talka** : conversations, recherche, réactions, copie ;
 - **Découvrir** : flux vertical page par page, double toucher pour aimer, partage ;

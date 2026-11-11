@@ -1027,9 +1027,9 @@ button {
   }
 }
 
-/* ----- Le Snap de démonstration ----- */
+/* ----- Le Flash de démonstration ----- */
 
-.snapdemo {
+.flashdemo {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
@@ -1091,7 +1091,7 @@ button {
   outline-offset: 3px;
 }
 
-.snapdemo__stage {
+.flashdemo__stage {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
@@ -1099,8 +1099,8 @@ button {
   background: var(--surface-2);
 }
 
-.snapdemo__closed,
-.snapdemo__gone {
+.flashdemo__closed,
+.flashdemo__gone {
   position: absolute;
   inset: 0;
   display: grid;
@@ -1112,7 +1112,7 @@ button {
   animation: pop 0.45s var(--ease);
 }
 
-.snapdemo__badge {
+.flashdemo__badge {
   width: 72px;
   height: 72px;
   border-radius: 22px;
@@ -1137,14 +1137,14 @@ button {
   }
 }
 
-.snapdemo__open {
+.flashdemo__open {
   position: absolute;
   inset: 0;
   animation: pop 0.35s var(--ease);
 }
 
-.snapdemo__photo,
-.snapdemo__photo svg {
+.flashdemo__photo,
+.flashdemo__photo svg {
   width: 100%;
   height: 100%;
 }
@@ -1207,7 +1207,7 @@ button {
   }
 }
 
-.snapdemo__close {
+.flashdemo__close {
   position: absolute;
   top: 12px;
   left: 12px;

@@ -190,7 +190,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FLASHA;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
-				INFOPLIST_KEY_NSCameraUsageDescription = "FLASHA utilise la caméra pour prendre des photos et filmer des Snaps.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "FLASHA utilise la caméra pour prendre des photos et filmer des Flashs.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "FLASHA utilise le micro pour le son des vidéos et les messages vocaux Talka.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "FLASHA enregistre vos photos dans vos Souvenirs si vous le demandez.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -223,7 +223,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FLASHA;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
-				INFOPLIST_KEY_NSCameraUsageDescription = "FLASHA utilise la caméra pour prendre des photos et filmer des Snaps.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "FLASHA utilise la caméra pour prendre des photos et filmer des Flashs.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "FLASHA utilise le micro pour le son des vidéos et les messages vocaux Talka.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "FLASHA enregistre vos photos dans vos Souvenirs si vous le demandez.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

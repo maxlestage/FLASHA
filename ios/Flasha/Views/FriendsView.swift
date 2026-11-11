@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Les stories et les Snaps reçus des amis, et la gestion des amis.
+/// Les stories et les Flashs reçus des amis, et la gestion des amis.
 struct FriendsView: View {
     @Environment(AppStore.self) private var store
-    @State private var openedSnap: Snap?
+    @State private var openedFlash: Flash?
     @State private var addingFriend = false
 
     var body: some View {
@@ -27,18 +27,18 @@ struct FriendsView: View {
                     Text("Stories")
                 }
 
-                Section("Snaps reçus") {
-                    if store.receivedSnaps.isEmpty {
-                        ContentUnavailableView("Aucun Snap", systemImage: "bolt.slash", description: Text("Les Snaps de vos amis arrivent ici."))
+                Section("Flashs reçus") {
+                    if store.receivedFlashs.isEmpty {
+                        ContentUnavailableView("Aucun Flash", systemImage: "bolt.slash", description: Text("Les Flashs de vos amis arrivent ici."))
                     }
-                    ForEach(store.receivedSnaps) { snap in
+                    ForEach(store.receivedFlashs) { flash in
                         Button {
-                            if snap.canOpen { openedSnap = snap }
+                            if flash.canOpen { openedFlash = flash }
                         } label: {
-                            SnapRow(snap: snap)
+                            FlashRow(flash: flash)
                         }
                         .foregroundStyle(.primary)
-                        .disabled(!snap.canOpen)
+                        .disabled(!flash.canOpen)
                     }
                 }
 
@@ -73,39 +73,39 @@ struct FriendsView: View {
                     .environment(store)
                     .presentationDetents([.medium])
             }
-            .fullScreenCover(item: $openedSnap) { snap in
-                SnapViewer(snap: snap)
+            .fullScreenCover(item: $openedFlash) { flash in
+                FlashViewer(flash: flash)
                     .environment(store)
             }
         }
     }
 }
 
-private struct SnapRow: View {
-    let snap: Snap
+private struct FlashRow: View {
+    let flash: Flash
 
     var body: some View {
         HStack(spacing: 12) {
             RoundedRectangle(cornerRadius: 5)
-                .fill(snap.opened ? AnyShapeStyle(Color.secondary.opacity(0.3)) : AnyShapeStyle(Theme.gradient))
+                .fill(flash.opened ? AnyShapeStyle(Color.secondary.opacity(0.3)) : AnyShapeStyle(Theme.gradient))
                 .frame(width: 22, height: 22)
             VStack(alignment: .leading, spacing: 2) {
-                Text(snap.from.name).font(.headline)
+                Text(flash.from.name).font(.headline)
                 Text(status)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text(snap.sentAt, style: .relative)
+            Text(flash.sentAt, style: .relative)
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }
 
     private var status: String {
-        if !snap.opened { return "Nouveau Snap · \(snap.duration.label) · touchez pour voir" }
-        if snap.canOpen { return "Ouvert · une relecture autorisée" }
-        return snap.replayed ? "Relu" : "Ouvert"
+        if !flash.opened { return "Nouveau Flash · \(flash.duration.label) · touchez pour voir" }
+        if flash.canOpen { return "Ouvert · une relecture autorisée" }
+        return flash.replayed ? "Relu" : "Ouvert"
     }
 }
 

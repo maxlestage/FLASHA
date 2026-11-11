@@ -7,12 +7,12 @@
 use flasha::content::{
     AUDIENCES, Card, EDGE, EDITOR, EXPERIENCES, LABS, PLANS, PRIVACY, ROADMAP, STORIES, TALKA,
 };
-use flasha::{camera, flash, snap, talka};
+use flasha::{camera, flash, scene, talka};
 use paquets::prelude::*;
 
 mod export;
 
-const DESCRIPTION: &str = "FLASHA, l'application sociale du partage instantané : caméra, Snaps éphémères, Talka la messagerie, Stories et Découvrir. Sur iOS et Android.";
+const DESCRIPTION: &str = "FLASHA, l'application sociale du partage instantané : caméra, Flashs éphémères, Talka la messagerie, Stories et Découvrir. Sur iOS et Android.";
 
 /// Le logo : un flash photographique stylisé.
 const LOGO: &str = r##"<svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true" focusable="false"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#ec4899"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs><rect width="48" height="48" rx="14" fill="url(#lg)"/><path d="M27 7 13 27h9l-3 14 16-21h-9l1-13z" fill="#fff"/></svg>"##;
@@ -97,7 +97,7 @@ fn header_bar() -> Element {
                     .class("top__nav")
                     .attr("aria-label", "Sections")
                     .child(a().href("#experiences").text("Expériences"))
-                    .child(a().href("#snaps").text("Snaps"))
+                    .child(a().href("#flashs").text("Flashs"))
                     .child(a().href("#talka").text("Talka"))
                     .child(a().href("#confidentialite").text("Confidentialité"))
                     .child(a().href("#offres").text("Offres")),
@@ -127,7 +127,7 @@ fn hero() -> Element {
                                 .child(span().class("hero__tag").text("Capture the moment.")),
                         )
                         .child(p().class("lead").text(
-                            "Une caméra au centre, des Snaps éphémères, Talka pour discuter, des Stories pour partager son quotidien et un espace pour découvrir. Une seule application, rapide et sûre.",
+                            "Une caméra au centre, des Flashs éphémères, Talka pour discuter, des Stories pour partager son quotidien et un espace pour découvrir. Une seule application, rapide et sûre.",
                         ))
                         .child(
                             div()
@@ -154,7 +154,7 @@ fn hero() -> Element {
                                 .child(
                                     div()
                                         .class("phone__screen")
-                                        .child(island("flash", "", flash))
+                                        .child(island("scene", "", scene))
                                         .child(
                                             div()
                                                 .class("phone__ui")
@@ -177,7 +177,7 @@ fn hero() -> Element {
                                 .class("toast")
                                 .attr("aria-hidden", "true")
                                 .child(span().class("toast__dot"))
-                                .child(span().text("Léa a ouvert ton Snap")),
+                                .child(span().text("Léa a ouvert ton Flash")),
                         ),
                 ),
         )
@@ -193,7 +193,7 @@ fn experiences() -> Element {
                 .child(heading(
                     "Une application, cinq expériences",
                     "Tout ce qui compte, au même endroit",
-                    "Caméra, Snaps, Talka, Stories et Découvrir : une navigation en cinq onglets, avec la caméra au centre.",
+                    "Caméra, Flashs, Talka, Stories et Découvrir : une navigation en cinq onglets, avec la caméra au centre.",
                 ))
                 .child(
                     div()
@@ -277,19 +277,19 @@ impl HiddenCopy for Element {
     }
 }
 
-fn snaps() -> Element {
+fn flashs() -> Element {
     section()
         .class("section")
-        .id("snaps")
+        .id("flashs")
         .child(
             div()
                 .class("wrap split split--rev")
                 .child(
                     div()
                         .child(heading(
-                            "Le système Snap",
+                            "Le système Flash",
                             "Éphémère, et vraiment sous contrôle",
-                            "Choisissez combien de temps votre Snap reste à l'écran, s'il peut être revu, et à qui il est envoyé. Essayez :",
+                            "Choisissez combien de temps votre Flash reste à l'écran, s'il peut être revu, et à qui il est envoyé. Essayez :",
                         ))
                         .child(
                             p().class("note")
@@ -297,7 +297,7 @@ fn snaps() -> Element {
                                 .text("Les captures d'écran sont signalées quand c'est détectable, mais un contenu éphémère peut toujours être photographié par un autre appareil : FLASHA le dit clairement."),
                         ),
                 )
-                .child(div().class("demo").attr("data-reveal", "").child(island("snap", "", snap))),
+                .child(div().class("demo").attr("data-reveal", "").child(island("flash", "", flash))),
         )
 }
 
@@ -539,7 +539,7 @@ async fn home(_req: Request) -> Page {
                 .child(hero())
                 .child(experiences())
                 .child(camera_section())
-                .child(snaps())
+                .child(flashs())
                 .child(talka_section())
                 .child(stories())
                 .child(privacy())
@@ -591,7 +591,7 @@ mod tests {
             "accueil",
             "experiences",
             "camera",
-            "snaps",
+            "flashs",
             "talka",
             "stories",
             "confidentialite",
@@ -600,7 +600,7 @@ mod tests {
         ] {
             assert!(html.contains(&format!(r#"id="{id}""#)), "section {id}");
         }
-        for name in ["flash", "camera", "snap", "talka"] {
+        for name in ["scene", "camera", "flash", "talka"] {
             assert!(
                 html.contains(&format!(r#"name="{name}""#)) || html.contains(name),
                 "island {name}"

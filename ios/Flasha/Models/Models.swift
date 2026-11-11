@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Combien de temps un Snap reste à l'écran.
-enum SnapDuration: Int, CaseIterable, Identifiable {
+/// Combien de temps un Flash reste à l'écran.
+enum FlashDuration: Int, CaseIterable, Identifiable {
     case one = 1
     case three = 3
     case five = 5
@@ -15,7 +15,7 @@ enum SnapDuration: Int, CaseIterable, Identifiable {
         self == .unlimited ? "∞" : "\(rawValue) s"
     }
 
-    /// `nil` : le Snap reste affiché jusqu'à sa fermeture.
+    /// `nil` : le Flash reste affiché jusqu'à sa fermeture.
     var seconds: Double? {
         self == .unlimited ? nil : Double(rawValue)
     }
@@ -58,19 +58,19 @@ struct Friend: Identifiable, Hashable {
     var initial: String { String(name.prefix(1)) }
 }
 
-/// Un Snap : une photo éphémère, avec ses règles d'expiration.
-struct Snap: Identifiable {
+/// Un Flash : une photo éphémère, avec ses règles d'expiration.
+struct Flash: Identifiable {
     let id = UUID()
     var from: Friend
     var image: UIImage?
     var caption: String
-    var duration: SnapDuration
+    var duration: FlashDuration
     var allowsReplay: Bool
     var sentAt: Date
     var opened = false
     var replayed = false
 
-    /// Le Snap peut-il encore être ouvert ?
+    /// Le Flash peut-il encore être ouvert ?
     var canOpen: Bool {
         !opened || (allowsReplay && !replayed)
     }

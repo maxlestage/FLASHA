@@ -16,7 +16,7 @@ pub const EXPERIENCES: [Card; 5] = [
     },
     Card {
         icon: "bolt",
-        title: "Snaps",
+        title: "Flashs",
         text: "Des photos et vidéos éphémères, de 1 seconde à sans limite, avec accusés d'ouverture et relecture autorisée ou non.",
     },
     Card {
@@ -144,7 +144,7 @@ pub const ROADMAP: [(&str, &str, &str); 5] = [
     (
         "Phase 1",
         "Le socle social",
-        "Comptes, profils, amis, caméra, éditeur simple, Snaps et leur expiration, notifications.",
+        "Comptes, profils, amis, caméra, éditeur simple, Flashs et leur expiration, notifications.",
     ),
     (
         "Phase 2",
@@ -189,7 +189,7 @@ pub const PLANS: [(&str, &str, &str, &[&str], bool); 2] = [
         "Pour tout le monde, pour toujours.",
         &[
             "Caméra et éditeur",
-            "Snaps et Talka",
+            "Flashs et Talka",
             "Stories et Découvrir",
             "Appels audio et vidéo",
             "Filtres classiques",
