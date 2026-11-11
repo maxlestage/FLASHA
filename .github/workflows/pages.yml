@@ -74,4 +74,7 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v5
       - name: Summary
-        run: echo "### 🚀 Site en ligne : ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          echo "### 🚀 Site en ligne : $PAGE_URL" >> "$GITHUB_STEP_SUMMARY"
