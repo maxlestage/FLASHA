@@ -7,16 +7,21 @@
 use paquets::prelude::*;
 
 pub mod content;
+pub mod social;
+
+pub use social::{clips, fil};
 
 #[cfg(target_arch = "wasm32")]
 mod scene;
 
 /// Chaque îlot, sous le nom donné à [`island`].
-pub const ISLANDS: [(&str, paquets::active::IslandFn); 4] = [
+pub const ISLANDS: [(&str, paquets::active::IslandFn); 6] = [
     ("scene", scene),
     ("camera", camera),
     ("flash", flash),
     ("talka", talka),
+    ("clips", clips),
+    ("fil", fil),
 ];
 
 // ----- La scène 2D -------------------------------------------------------------------

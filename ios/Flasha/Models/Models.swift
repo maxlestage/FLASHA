@@ -93,14 +93,46 @@ struct Conversation: Identifiable {
     var lastMessage: Message? { messages.last }
 }
 
-/// Une vidéo ou photo publique de Découvrir.
-struct Post: Identifiable {
+/// Un commentaire, sur un Clip ou une publication du Fil.
+struct Comment: Identifiable, Equatable {
+    let id = UUID()
+    var author: String
+    var text: String
+    var likes = 0
+}
+
+/// Un Clip : une vidéo courte et verticale de Découvrir.
+struct Clip: Identifiable {
     let id = UUID()
     var creator: String
-    var title: String
-    var hashtag: String
+    var caption: String
+    var sound: String
     var colors: [Color]
     var symbol: String
     var likes: Int
+    var comments: [Comment]
+    var shares: Int
     var liked = false
+    var saved = false
+}
+
+/// Une photo d'une publication du Fil (dessinée : pas encore de serveur de médias).
+struct Slide: Identifiable {
+    let id = UUID()
+    var colors: [Color]
+    var symbol: String
+}
+
+/// Une publication du Fil : un carrousel de photos, avec ses réactions.
+struct FeedPost: Identifiable {
+    let id = UUID()
+    var author: Friend
+    var place: String?
+    var caption: String
+    var slides: [Slide]
+    var likes: Int
+    var comments: [Comment]
+    var date: Date
+    var liked = false
+    var saved = false
 }

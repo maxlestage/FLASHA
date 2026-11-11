@@ -5,9 +5,10 @@
 //!     paquets dev      # http://localhost:3000
 
 use flasha::content::{
-    AUDIENCES, Card, EDGE, EDITOR, EXPERIENCES, LABS, PLANS, PRIVACY, ROADMAP, STORIES, TALKA,
+    AUDIENCES, Card, EDGE, EDITOR, EXPERIENCES, LABS, PLANS, PRIVACY, ROADMAP, SOCIAL, STORIES,
+    TALKA,
 };
-use flasha::{camera, flash, scene, talka};
+use flasha::{camera, clips, fil, flash, scene, talka};
 use paquets::prelude::*;
 
 mod export;
@@ -99,6 +100,7 @@ fn header_bar() -> Element {
                     .child(a().href("#experiences").text("Expériences"))
                     .child(a().href("#flashs").text("Flashs"))
                     .child(a().href("#talka").text("Talka"))
+                    .child(a().href("#clips").text("Clips"))
                     .child(a().href("#confidentialite").text("Confidentialité"))
                     .child(a().href("#offres").text("Offres")),
             )
@@ -329,6 +331,44 @@ fn talka_section() -> Element {
         )
 }
 
+fn social() -> Element {
+    section()
+        .class("section")
+        .id("clips")
+        .child(
+            div()
+                .class("wrap")
+                .child(heading(
+                    "Clips et Fil",
+                    "Des vidéos qui défilent, des photos qui restent",
+                    "Les Clips : des vidéos courtes en plein écran, avec leur son, leurs défis et leurs remix. Le Fil : les publications de vos amis et des créateurs que vous suivez, en carrousel. Glissez, et touchez deux fois pour aimer.",
+                ))
+                .child(
+                    div()
+                        .class("social")
+                        .child(
+                            div()
+                                .class("social__demo")
+                                .attr("data-reveal", "")
+                                .child(h3().class("social__label").text("Clips"))
+                                .child(island("clips", "", clips)),
+                        )
+                        .child(
+                            div()
+                                .class("social__demo")
+                                .attr("data-reveal", "")
+                                .child(h3().class("social__label").text("Fil"))
+                                .child(island("fil", "", fil)),
+                        ),
+                )
+                .child(
+                    ul().class("social__features")
+                        .attr("data-reveal", "")
+                        .children(SOCIAL.iter().map(|f| li().child(icon("check")).child(span().text(*f)))),
+                ),
+        )
+}
+
 fn stories() -> Element {
     section()
         .class("section")
@@ -541,6 +581,7 @@ async fn home(_req: Request) -> Page {
                 .child(camera_section())
                 .child(flashs())
                 .child(talka_section())
+                .child(social())
                 .child(stories())
                 .child(privacy())
                 .child(edge())
@@ -593,6 +634,7 @@ mod tests {
             "camera",
             "flashs",
             "talka",
+            "clips",
             "stories",
             "confidentialite",
             "offres",
@@ -600,7 +642,7 @@ mod tests {
         ] {
             assert!(html.contains(&format!(r#"id="{id}""#)), "section {id}");
         }
-        for name in ["scene", "camera", "flash", "talka"] {
+        for name in ["scene", "camera", "flash", "talka", "clips", "fil"] {
             assert!(
                 html.contains(&format!(r#"name="{name}""#)) || html.contains(name),
                 "island {name}"

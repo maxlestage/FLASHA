@@ -25,6 +25,10 @@ puis élargi par `min-width`. Aucune largeur fixe ne dépasse l'écran, rien ne 
   - la caméra : filtres, photo ou vidéo, déclencheur qui fait un vrai flash ;
   - le Flash : durée d'affichage (1 s à ∞), compte à rebours, expiration et relecture autorisée ;
   - Talka : une conversation où Léa répond, avec l'indicateur « en train d'écrire ».
+  - les Clips : des vidéos courtes verticales, une par écran (glisser, flèches), onglets
+    « Pour toi » et « Abonnements », double toucher pour aimer, suivre un créateur, son qui défile ;
+  - le Fil : une publication en carrousel (glisser, flèches), double toucher pour aimer,
+    enregistrer, commenter.
 - **Animations** en CSS : apparitions au défilement (`animation-timeline: view()`, sans
   JavaScript), téléphone flottant, bande défilante des outils de l'éditeur, anneaux de stories,
   notifications. Tout respecte `prefers-reduced-motion`.
@@ -75,8 +79,12 @@ Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
 - **Amis** : stories, Flashs reçus qui expirent après la durée choisie, meilleurs amis, ajout
   par pseudo ou lien d'invitation ;
 - **Talka** : conversations, recherche, réactions, copie ;
-- **Découvrir** : flux vertical page par page, double toucher pour aimer, partage ;
-- **Profil** : statistiques privées et contrôles de confidentialité (localisation coupée par défaut).
+- **Fil** (onglet Amis, avec Flashs et Amis) : stories, publications en carrousel, double
+  toucher pour aimer, commentaires, enregistrement, nouvelle publication ;
+- **Découvrir** : les Clips, page par page, « Pour toi » et « Abonnements », suivre un créateur,
+  aimer, commenter, enregistrer, partager, disque du son qui tourne ;
+- **Profil** : statistiques privées, grille des publications et contrôles de confidentialité
+  (localisation coupée par défaut).
 
 Sur le simulateur, qui n'a pas de caméra, une photo de démonstration remplace la capture.
 Les données sont locales : le serveur, les appels et l'enregistrement vidéo arrivent avec les
