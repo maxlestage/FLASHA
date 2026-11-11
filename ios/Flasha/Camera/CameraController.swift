@@ -3,11 +3,15 @@ import UIKit
 
 /// La caméra : une session AVFoundation, configurée et pilotée sur sa propre file,
 /// pour que l'interface reste fluide pendant l'ouverture de la caméra.
-nonisolated final class CameraController: NSObject, @unchecked Sendable, AVCapturePhotoCaptureDelegate {
+nonisolated final class CameraController: NSObject, @unchecked Sendable, AVCapturePhotoCaptureDelegate,
+    AVCaptureFileOutputRecordingDelegate
+{
     let session = AVCaptureSession()
 
     private let queue = DispatchQueue(label: "app.flasha.camera")
     private let photoOutput = AVCapturePhotoOutput()
+    private let movieOutput = AVCaptureMovieFileOutput()
+    private var recordingCompletion: (@Sendable (URL?) -> Void)?
     private var input: AVCaptureDeviceInput?
     private var completion: (@Sendable (UIImage?) -> Void)?
 
@@ -50,7 +54,8 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable, AVCaptu
 
     private func configure(position: AVCaptureDevice.Position) {
         session.beginConfiguration()
-        session.sessionPreset = .photo
+        // 1080p : assez pour FLASHA Photo (1080 × 1440) comme pour FLASHA Vidéo (1080 × 1920).
+        session.sessionPreset = .high
         if let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position),
            let newInput = try? AVCaptureDeviceInput(device: device),
            session.canAddInput(newInput) {
@@ -60,6 +65,15 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable, AVCaptu
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
             photoOutput.maxPhotoQualityPrioritization = .quality
+        }
+        if let microphone = AVCaptureDevice.default(for: .audio),
+           let audioInput = try? AVCaptureDeviceInput(device: microphone),
+           session.canAddInput(audioInput) {
+            session.addInput(audioInput)
+        }
+        if session.canAddOutput(movieOutput) {
+            session.addOutput(movieOutput)
+            movieOutput.maxRecordedDuration = CMTime(seconds: FlashaFormat.Video.maxDuration, preferredTimescale: 600)
         }
         session.commitConfiguration()
     }
@@ -118,12 +132,60 @@ nonisolated final class CameraController: NSObject, @unchecked Sendable, AVCaptu
                 completion(nil)
                 return
             }
+            Self.portrait(photoOutput.connection(with: .video))
             let settings = AVCapturePhotoSettings()
             if photoOutput.supportedFlashModes.contains(flash) {
                 settings.flashMode = flash
             }
             self.completion = completion
             photoOutput.capturePhoto(with: settings, delegate: self)
+        }
+    }
+
+    /// Les photos et vidéos sont prises en portrait.
+    private static func portrait(_ connection: AVCaptureConnection?) {
+        if let connection, connection.isVideoRotationAngleSupported(90) {
+            connection.videoRotationAngle = 90
+        }
+    }
+
+    // MARK: Vidéo
+
+    /// Commence à filmer (60 secondes au plus).
+    func startRecording() {
+        queue.async { [self] in
+            guard session.isRunning, !movieOutput.isRecording else { return }
+            Self.portrait(movieOutput.connection(with: .video))
+            let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).mov")
+            movieOutput.startRecording(to: url, recordingDelegate: self)
+        }
+    }
+
+    /// Arrête de filmer et donne le fichier brut, à convertir en FLASHA Vidéo.
+    func stopRecording() async -> URL? {
+        await withCheckedContinuation { (continuation: CheckedContinuation<URL?, Never>) in
+            queue.async { [self] in
+                guard movieOutput.isRecording else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                recordingCompletion = { continuation.resume(returning: $0) }
+                movieOutput.stopRecording()
+            }
+        }
+    }
+
+    func fileOutput(
+        _ output: AVCaptureFileOutput,
+        didFinishRecordingTo outputFileURL: URL,
+        from connections: [AVCaptureConnection],
+        error: (any Error)?
+    ) {
+        // Une erreur peut accompagner un fichier valable (durée maximale atteinte).
+        let usable = FileManager.default.fileExists(atPath: outputFileURL.path)
+        queue.async { [self] in
+            recordingCompletion?(usable ? outputFileURL : nil)
+            recordingCompletion = nil
         }
     }
 

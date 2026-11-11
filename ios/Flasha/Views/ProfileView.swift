@@ -68,6 +68,23 @@ struct ProfileView: View {
                     Text("La localisation est désactivée par défaut. Une capture d'écran n'est pas toujours détectable, et un Flash peut être photographié par un autre appareil.")
                 }
 
+                Section {
+                    LabeledContent("Utilisé", value: "\(store.mediaBytes.fileSize) sur \(store.mediaQuota.fileSize)")
+                    ProgressView(value: Double(store.mediaBytes), total: Double(max(store.mediaQuota, 1)))
+                        .tint(Theme.pink)
+                    Picker("Limite", selection: Binding(get: { store.mediaQuota }, set: { store.setMediaQuota($0) })) {
+                        ForEach(MediaStore.quotas, id: \.self) { quota in
+                            Text(quota.fileSize).tag(quota)
+                        }
+                    }
+                    Button("Libérer de l'espace", role: .destructive) { store.clearMediaCache() }
+                } header: {
+                    Text("Stockage des photos et vidéos")
+                } footer: {
+                    Text("Tout est enregistré au format FLASHA : photos 1080 × 1440 en HEIC, vidéos 1080 × 1920 en HEVC. Au-delà de la limite, les plus anciennes sont effacées en premier ; vos Souvenirs et les envois en cours sont gardés.")
+                }
+                .onAppear { store.refreshStorage() }
+
                 Section("FLASHA+") {
                     Label("Stockage étendu, filtres exclusifs et outils de création — 4,99 € par mois (prix indicatif).", systemImage: "sparkles")
                 }

@@ -324,3 +324,19 @@ pub fn compact(n: u32) -> String {
         _ => format!("{},{} M", n / 1_000_000, (n / 100_000) % 10),
     }
 }
+
+/// Les formats FLASHA : (nom, dimensions, détails, poids indicatif).
+pub const FORMATS: [(&str, &str, &str, &str); 2] = [
+    (
+        "FLASHA Photo",
+        "1080 × 1440",
+        "HEIC, recadrée et réduite automatiquement, sans position GPS ni métadonnées.",
+        "≈ 200 Ko au lieu de 3 Mo",
+    ),
+    (
+        "FLASHA Vidéo",
+        "1080 × 1920 · 30 i/s",
+        "HEVC à 2,5 Mbit/s, son AAC stéréo, lecture immédiate en streaming.",
+        "≈ 19 Mo la minute au lieu de 170 Mo",
+    ),
+];
