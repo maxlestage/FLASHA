@@ -1,4 +1,6 @@
-# Heroku builds the Docker image from the Dockerfile ("container" stack).
+# Autre façon de déployer (variable HEROKU_BUILD=docker) : Heroku construit l'image
+# du Dockerfile sur la pile « container ». Par défaut, c'est le buildpack emk/rust
+# (RustConfig, heroku-build.sh, Procfile) sur la pile heroku-26.
 build:
   docker:
     web: Dockerfile

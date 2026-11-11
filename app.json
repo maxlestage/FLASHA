@@ -1,7 +1,15 @@
 {
   "name": "FLASHA",
-  "description": "Le site de présentation de FLASHA, écrit en Rust avec Paquets.",
-  "keywords": ["rust", "paquets", "flasha"],
-  "stack": "container",
+  "description": "Le site de FLASHA (Rust, Paquets, îlots WebAssembly, scène 2D) et son relais sans base de données : il transmet des paquets chiffrés de bout en bout entre téléphones, sans rien écrire sur disque.",
+  "repository": "https://github.com/maxlestage/FLASHA",
+  "website": "https://maxlestage.github.io/FLASHA/",
+  "logo": "https://maxlestage.github.io/FLASHA/favicon.svg",
+  "keywords": ["rust", "paquets", "flasha", "webassembly", "relay"],
+  "stack": "heroku-26",
+  "buildpacks": [
+    {
+      "url": "emk/rust"
+    }
+  ],
   "success_url": "/"
 }

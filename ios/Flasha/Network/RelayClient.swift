@@ -78,6 +78,16 @@ final class RelayClient {
         }
     }
 
+    /// Un ping toutes les 25 secondes : les hébergeurs (Heroku coupe après 55 secondes
+    /// de silence) gardent ainsi la connexion ouverte.
+    private func keepAlive(_ task: URLSessionWebSocketTask) async {
+        while self.task === task {
+            try? await Task.sleep(for: .seconds(25))
+            guard self.task === task else { return }
+            task.sendPing { _ in }
+        }
+    }
+
     private struct Control: Decodable {
         var t: String
         var nonce: String?
@@ -103,6 +113,7 @@ final class RelayClient {
         case "ready":
             status = .online
             onReady?()
+            Task { await keepAlive(task) }
         default:
             break
         }
