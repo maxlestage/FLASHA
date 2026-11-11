@@ -1,0 +1,37 @@
+[package]
+name = "flasha"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+description = "Le site de présentation de FLASHA, écrit en Rust avec Paquets : pages rendues par le serveur, îlots WebAssembly et une scène 2D animée."
+
+# One crate, two targets: the server (src/main.rs) and, compiled to WebAssembly,
+# the islands and the 2D scene of src/lib.rs.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+paquets = { git = "https://github.com/maxlestage/Paquets", tag = "v0.3.2" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+paquets = { git = "https://github.com/maxlestage/Paquets", tag = "v0.3.2", default-features = false, features = ["client"] }
+wasm-bindgen = "=0.2.130"
+web-sys = { version = "0.3.107", features = ["console", "CssStyleDeclaration", "HtmlElement", "MediaQueryList", "Window"] }
+
+[dev-dependencies]
+tokio = { version = "1.54", features = ["macros", "rt-multi-thread"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# The browser bundle: as small as possible.
+# Not `strip = true`: wasm-bindgen reads the `target_features` section.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = true
+panic = "abort"
+strip = false

@@ -1,0 +1,7 @@
+{
+  "name": "FLASHA",
+  "description": "Le site de présentation de FLASHA, écrit en Rust avec Paquets.",
+  "keywords": ["rust", "paquets", "flasha"],
+  "stack": "container",
+  "success_url": "/"
+}
