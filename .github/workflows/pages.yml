@@ -1,0 +1,77 @@
+# Publie le site sur GitHub Pages à chaque mise à jour de master.
+#
+# Une seule fois : GitHub → Settings → Pages → Build and deployment → Source :
+# « GitHub Actions ». Le site est alors en ligne sur
+# https://<compte>.github.io/<dépôt>/ (ou sur votre domaine personnalisé).
+#
+# Le site exporté sort du serveur lui-même (`flasha export`), avec le bundle
+# WebAssembly des îlots et de la scène 2D, et le chemin de base donné par Pages.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois ; celui en cours va jusqu'au bout.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - id: pages
+        uses: actions/configure-pages@v6
+      - name: Browser bundle (WebAssembly)
+        run: |
+          set -euo pipefail
+          cargo build --lib --target wasm32-unknown-unknown --profile wasm-release
+          # wasm-bindgen à la version de Cargo.lock : binaire publié, sinon compilé.
+          version=$(grep -A1 '^name = "wasm-bindgen"$' Cargo.lock | sed -n 's/^version = "\(.*\)"$/\1/p')
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${version}/wasm-bindgen-${version}-x86_64-unknown-linux-musl.tar.gz" \
+            | tar -xz --strip-components=1 -C "$RUNNER_TEMP/bin" \
+            || cargo install wasm-bindgen-cli --version "$version" --locked --root "$RUNNER_TEMP"
+          "$RUNNER_TEMP/bin/wasm-bindgen" --target web --no-typescript \
+            --remove-name-section --remove-producers-section --out-dir pkg \
+            target/wasm32-unknown-unknown/wasm-release/flasha.wasm
+      - name: Static site
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: cargo run --release -- export dist
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+          include-hidden-files: true
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
+      - name: Summary
+        run: echo "### 🚀 Site en ligne : ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

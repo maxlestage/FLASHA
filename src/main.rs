@@ -10,6 +10,8 @@ use flasha::content::{
 use flasha::{camera, flash, snap, talka};
 use paquets::prelude::*;
 
+mod export;
+
 const DESCRIPTION: &str = "FLASHA, l'application sociale du partage instantané : caméra, Snaps éphémères, Talka la messagerie, Stories et Découvrir. Sur iOS et Android.";
 
 /// Le logo : un flash photographique stylisé.
@@ -558,7 +560,21 @@ fn app() -> App {
 }
 
 fn main() -> std::io::Result<()> {
-    app().run() // $PORT sur Heroku, 3000 sinon
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    match args.first().map(String::as_str) {
+        // `flasha export dist` : le site statique, pour GitHub Pages.
+        Some("export") => {
+            let out = std::path::PathBuf::from(args.get(1).map_or("dist", String::as_str));
+            let base = std::env::var("BASE_PATH").unwrap_or_default();
+            let runtime = tokio::runtime::Builder::new_multi_thread()
+                .enable_all()
+                .build()?;
+            let written = runtime.block_on(export::export(app(), &out, &base))?;
+            println!("{written} fichiers écrits dans {}", out.display());
+            Ok(())
+        }
+        _ => app().run(), // $PORT sur Heroku, 3000 sinon
+    }
 }
 
 #[cfg(test)]

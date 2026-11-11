@@ -1,6 +1,7 @@
 # Tests every push: the website (Rust, Paquets) and the iOS app (Swift). When
 # everything is green, the branch is merged into master automatically (branches
-# named wip/... are not), then master is deployed to Heroku by heroku.yml.
+# named wip/... are not), then master is deployed to GitHub Pages (pages.yml)
+# and to Heroku (heroku.yml).
 
 name: CI
 
@@ -30,6 +31,10 @@ jobs:
       - run: cargo test
       - name: Browser bundle
         run: cargo build --lib --target wasm32-unknown-unknown --profile wasm-release
+      - name: Static export (GitHub Pages)
+        env:
+          BASE_PATH: /FLASHA
+        run: cargo run -- export dist && test -f dist/index.html && test -f dist/flasha.css
 
   ios:
     name: iOS app (Swift)
@@ -83,8 +88,10 @@ jobs:
           fi
           git merge --no-ff --no-edit "$SHA" -m "Merge branch '$BRANCH' into master (auto-merge)"
           git push origin HEAD:master
-      # A push made by a workflow starts no other workflow: start the deployment.
+      # A push made by a workflow starts no other workflow: start the deployments.
       - name: Deploy master
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run heroku.yml --ref master --repo "$GITHUB_REPOSITORY"
+        run: |
+          gh workflow run pages.yml --ref master --repo "$GITHUB_REPOSITORY"
+          gh workflow run heroku.yml --ref master --repo "$GITHUB_REPOSITORY"

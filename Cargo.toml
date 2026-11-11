@@ -13,6 +13,7 @@ crate-type = ["cdylib", "rlib"]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 paquets = { git = "https://github.com/maxlestage/Paquets", tag = "v0.3.2" }
+tokio = { version = "1.54", features = ["macros", "rt-multi-thread"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 paquets = { git = "https://github.com/maxlestage/Paquets", tag = "v0.3.2", default-features = false, features = ["client"] }

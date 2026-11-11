@@ -46,6 +46,24 @@ cargo test                 # les tests de la page
 
 Avec la commande `paquets` : `paquets dev` fait les deux.
 
+## Déployer sur GitHub Pages
+
+Le workflow `.github/workflows/pages.yml` publie le site à chaque mise à jour de `master`
+(et à la demande : *Actions → Deploy to GitHub Pages → Run workflow*).
+
+1. Une seule fois : GitHub → *Settings → Pages → Build and deployment → Source* :
+   **GitHub Actions**.
+2. Le site est en ligne sur `https://<compte>.github.io/FLASHA/`.
+
+Le workflow compile le bundle WebAssembly, puis `flasha export dist` écrit le site statique :
+la page sort du serveur lui-même (client de test en mémoire de Paquets), ses adresses
+reçoivent le chemin de base donné par Pages (`/FLASHA`), avec le manifeste et le service
+worker de l'application installable. En local :
+
+```sh
+BASE_PATH=/FLASHA cargo run --release -- export dist
+```
+
 ## L'application iOS
 
 Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
@@ -69,5 +87,5 @@ phases suivantes de la feuille de route.
 Chaque push lance la CI (`.github/workflows/ci.yml`) : formatage, clippy (serveur et
 WebAssembly), tests et bundle du site, puis compilation de l'application iOS sur macOS. Quand
 tout est vert, la branche est **fusionnée automatiquement dans `master`** (sauf les branches
-`wip/...`), puis le site est déployé sur Heroku (`.github/workflows/heroku.yml`, avec le secret
-`HEROKU_API_KEY` et la variable `HEROKU_APP_NAME`).
+`wip/...`), puis le site est déployé sur GitHub Pages et, s'il est configuré, sur Heroku
+(`.github/workflows/heroku.yml`, avec le secret `HEROKU_API_KEY` et la variable `HEROKU_APP_NAME`).
