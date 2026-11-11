@@ -2,7 +2,7 @@ import Observation
 import SwiftUI
 
 /// Tout ce que l'app enregistre, en un seul bloc chiffré dans le coffre.
-nonisolated struct Snapshot: Codable, Sendable {
+nonisolated struct SavedState: Codable, Sendable {
     static let name = "state.v1"
 
     var me: Friend
@@ -28,15 +28,15 @@ extension AppStore {
     /// de démonstration, aussitôt chiffrées.
     static func load() -> AppStore {
         let store: AppStore
-        if let snapshot = Vault.shared.load(Snapshot.self, name: Snapshot.name) {
+        if let savedState = Vault.shared.load(SavedState.self, name: SavedState.name) {
             store = AppStore(
-                friends: snapshot.friends,
-                receivedFlashs: snapshot.receivedFlashs,
-                conversations: snapshot.conversations,
-                clips: snapshot.clips,
-                feed: snapshot.feed
+                friends: savedState.friends,
+                receivedFlashs: savedState.receivedFlashs,
+                conversations: savedState.conversations,
+                clips: savedState.clips,
+                feed: savedState.feed
             )
-            store.apply(snapshot)
+            store.apply(savedState)
         } else {
             store = preview()
             store.persist()
@@ -45,8 +45,8 @@ extension AppStore {
         return store
     }
 
-    var snapshot: Snapshot {
-        Snapshot(
+    var savedState: SavedState {
+        SavedState(
             me: me,
             friends: friends,
             receivedFlashs: receivedFlashs,
@@ -66,30 +66,30 @@ extension AppStore {
         )
     }
 
-    private func apply(_ snapshot: Snapshot) {
-        me = snapshot.me
-        following = snapshot.following
-        sentFlashs = snapshot.sentFlashs
-        publishedStories = snapshot.publishedStories
-        whoCanSendFlashs = snapshot.whoCanSendFlashs
-        whoCanMessage = snapshot.whoCanMessage
-        whoCanSeeStories = snapshot.whoCanSeeStories
-        whoCanCall = snapshot.whoCanCall
-        showsOnlineStatus = snapshot.showsOnlineStatus
-        sharesLocation = snapshot.sharesLocation
-        screenshotAlerts = snapshot.screenshotAlerts
+    private func apply(_ savedState: SavedState) {
+        me = savedState.me
+        following = savedState.following
+        sentFlashs = savedState.sentFlashs
+        publishedStories = savedState.publishedStories
+        whoCanSendFlashs = savedState.whoCanSendFlashs
+        whoCanMessage = savedState.whoCanMessage
+        whoCanSeeStories = savedState.whoCanSeeStories
+        whoCanCall = savedState.whoCanCall
+        showsOnlineStatus = savedState.showsOnlineStatus
+        sharesLocation = savedState.sharesLocation
+        screenshotAlerts = savedState.screenshotAlerts
     }
 
     /// Chiffre et enregistre l'état.
     func persist() {
-        Vault.shared.save(snapshot, as: Snapshot.name)
+        Vault.shared.save(savedState, as: SavedState.name)
     }
 
     /// Enregistre l'état après chaque changement, quel qu'il soit (un abonnement, un
     /// message, un réglage…).
     func autosave() {
         withObservationTracking {
-            _ = snapshot
+            _ = savedState
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
