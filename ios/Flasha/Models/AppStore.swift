@@ -175,6 +175,7 @@ final class AppStore {
 
     /// Mes publications, pour la grille du profil.
     var myPosts: [FeedPost] { feed.filter { $0.author.id == me.id } }
+}
 
 extension AppStore {
     /// Des données de démonstration.
