@@ -135,9 +135,9 @@ final class AppStore {
     // MARK: Talka
 
     private let replies = [
-        "Trop bien ! Envoie-moi un Flash 📸",
+        "Trop bien ! Envoie-moi un Flash ✦",
         "Je t'appelle en vidéo dans 5 min ?",
-        "Ajouté à notre album Talka Moments ✨",
+        "Ajouté à notre Planche partagée",
         "Haha 😂 j'adore",
         "On se retrouve ce soir ?",
     ]
@@ -281,16 +281,16 @@ extension AppStore {
                 Conversation(friend: jade, messages: []),
             ],
             clips: [
-                Clip(creator: "@sam.photo", caption: "Golden hour sur la plage 🌅 #goldenhour", sound: "Son original — sam.photo", colors: [Theme.orange, Theme.pink], symbol: "sun.horizon.fill", likes: 12_400, comments: [Comment(author: "lea", text: "Cette lumière 😍", likes: 42)], shares: 310),
-                Clip(creator: "@lea", caption: "Défi : un Flash par heure ⚡ #flashachallenge", sound: "Neon Nights — Studio FLASHA", colors: [Theme.violet, Theme.pink], symbol: "bolt.fill", likes: 8_920, comments: [Comment(author: "sam.photo", text: "Je relève le défi !", likes: 12)], shares: 204),
-                Clip(creator: "@ines.danse", caption: "Remix de la chorégraphie de Jade 💃 #remix", sound: "Pulse — Les Ondes", colors: [Theme.pink, .indigo], symbol: "figure.dance", likes: 30_100, comments: [Comment(author: "jade", text: "Trop fort le remix 🔥", likes: 230)], shares: 1_204),
-                Clip(creator: "@noah.cuisine", caption: "Des crêpes en 30 secondes 🥞 #recette", sound: "Son original — noah.cuisine", colors: [.orange, .yellow], symbol: "frying.pan.fill", likes: 5_310, comments: [], shares: 96),
+                Clip(creator: "@sam.photo", caption: "Marée basse, lumière rasante.", sound: "Son original — sam.photo", colors: [Theme.orange, Theme.pink], symbol: "sun.horizon.fill", likes: 12_400, comments: [Comment(author: "lea", text: "Cette lumière ✦", likes: 42)], shares: 310),
+                Clip(creator: "@lea", caption: "24 poses, aucune ratée.", sound: "Néons — Atelier FLASHA", colors: [Theme.violet, Theme.pink], symbol: "bolt.fill", likes: 8_920, comments: [Comment(author: "sam.photo", text: "Je relève le défi !", likes: 12)], shares: 204),
+                Clip(creator: "@ines.danse", caption: "La chorégraphie de Jade, à ma façon.", sound: "Pulse — Les Ondes", colors: [Theme.pink, .indigo], symbol: "figure.dance", likes: 30_100, comments: [Comment(author: "jade", text: "Trop fort ✦", likes: 230)], shares: 1_204),
+                Clip(creator: "@noah.cuisine", caption: "Crêpes, en 30 secondes chrono.", sound: "Son original — noah.cuisine", colors: [.orange, .yellow], symbol: "frying.pan.fill", likes: 5_310, comments: [], shares: 96),
             ],
             feed: [
                 FeedPost(
                     author: sam,
                     place: "Refuge des Lacs, Pyrénées",
-                    caption: "Trois jours là-haut, sans réseau, et un ciel comme ça 🏔️ #rando",
+                    caption: "Trois jours là-haut, sans réseau, et un ciel comme ça.",
                     slides: [
                         Slide(colors: [Theme.pink, Theme.orange], symbol: "mountain.2.fill"),
                         Slide(colors: [Theme.violet, Theme.pink], symbol: "water.waves"),
@@ -306,7 +306,7 @@ extension AppStore {
                 FeedPost(
                     author: lea,
                     place: nil,
-                    caption: "Nouveau filtre néon testé ce soir ✨",
+                    caption: "Premier essai du filtre Cyanotype.",
                     slides: [Slide(colors: [Theme.violet, .indigo], symbol: "sparkles")],
                     likes: 512,
                     comments: [],

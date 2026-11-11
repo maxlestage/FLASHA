@@ -57,6 +57,8 @@ jobs:
       - name: Static site
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # L'adresse publique, pour l'image d'aperçu et les liens de partage.
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: cargo run --release -- export dist
       - uses: actions/upload-pages-artifact@v5
         with:

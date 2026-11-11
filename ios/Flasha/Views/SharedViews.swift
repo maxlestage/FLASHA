@@ -17,6 +17,7 @@ struct MediaImage: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
+                    .developing()
             } else {
                 Rectangle().fill(Color.secondary.opacity(0.15))
                 ProgressView()

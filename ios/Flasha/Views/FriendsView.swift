@@ -3,7 +3,7 @@ import UIKit
 
 /// Ce que montre l'onglet Amis.
 enum HomeSection: String, CaseIterable, Identifiable {
-    case feed = "Fil"
+    case feed = "Planche"
     case flashs = "Flashs"
     case friends = "Amis"
 
@@ -71,6 +71,7 @@ struct FriendsView: View {
                 .disabled(!flash.canOpen)
             }
         }
+        .paperBackground()
     }
 
     private var friendsList: some View {
@@ -109,6 +110,7 @@ struct FriendsView: View {
                 }
             }
         }
+        .paperBackground()
     }
 
     private func relationship(_ id: FlashaID) -> String {
@@ -135,7 +137,7 @@ struct FriendsView: View {
                     withAnimation(.spring) { store.toggleBestFriend(friend) }
                 } label: {
                     Image(systemName: friend.isBestFriend ? "star.fill" : "star")
-                        .foregroundStyle(friend.isBestFriend ? Theme.orange : .secondary)
+                        .foregroundStyle(friend.isBestFriend ? Theme.halo : .secondary)
                         .symbolEffect(.bounce, value: friend.isBestFriend)
                 }
                 .buttonStyle(.plain)

@@ -1,7 +1,7 @@
 import PhotosUI
 import SwiftUI
 
-/// Le Fil : les publications photo des amis et des créateurs suivis.
+/// La Planche : les tirages des amis et des personnes suivies.
 struct FeedView: View {
     @Environment(AppStore.self) private var store
     @State private var commenting: FeedPost.ID?
@@ -17,6 +17,7 @@ struct FeedView: View {
             }
             .padding(.bottom, 24)
         }
+        .background(Theme.paper)
         .toolbar {
             Button("Publier", systemImage: "plus.square") { composing = true }
         }
@@ -96,13 +97,25 @@ struct PostCard: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .aspectRatio(1, contentMode: .fit)
+                .overlay(alignment: .bottomTrailing) {
+                    Text(Theme.dateStamp(post.date))
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Theme.halo)
+                        .shadow(color: Theme.halo.opacity(0.6), radius: 4)
+                        .padding(10)
+                }
+                .padding(10)
+                .padding(.bottom, 14)
+                .background(Theme.card)
+                .shadow(color: .black.opacity(0.18), radius: 14, y: 10)
+                .padding(.horizontal)
                 .onTapGesture(count: 2) { likeOnce() }
                 .overlay {
                     if burst {
-                        Image(systemName: "heart.fill")
+                        Image(systemName: "sparkle")
                             .font(.system(size: 100))
                             .foregroundStyle(.white)
-                            .shadow(color: Theme.pink, radius: 16)
+                            .shadow(color: Theme.halo, radius: 16)
                             .transition(.scale(scale: 0.3).combined(with: .opacity))
                     }
                 }
@@ -122,11 +135,11 @@ struct PostCard: View {
                 Button {
                     withAnimation(.spring) { store.toggleLike(post: post.id) }
                 } label: {
-                    Image(systemName: post.liked ? "heart.fill" : "heart")
-                        .foregroundStyle(post.liked ? Theme.pink : .primary)
+                    Image(systemName: "sparkle")
+                        .foregroundStyle(post.liked ? Theme.halo : .primary)
                         .symbolEffect(.bounce, value: post.liked)
                 }
-                .accessibilityLabel(post.liked ? "Ne plus aimer" : "J'aime")
+                .accessibilityLabel(post.liked ? "Reprendre l'éclat" : "Envoyer un éclat")
                 Button(action: onComments) { Image(systemName: "bubble.right") }
                     .accessibilityLabel("Commentaires")
                 ShareLink(item: "\(post.caption) — \(post.author.username) sur FLASHA") {
@@ -158,7 +171,8 @@ struct PostCard: View {
             .padding(.horizontal)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(compactCount(post.likes)) J'aime").font(.subheadline.bold())
+                Text(post.author.id == store.me.id ? "\(compactCount(post.likes)) éclats reçus" : (post.liked ? "Éclat envoyé ✦" : "Touchez deux fois pour un éclat"))
+                    .font(.subheadline.bold())
                 Text("\(Text(post.author.username).bold()) \(post.caption)")
                     .font(.subheadline)
                 if !post.comments.isEmpty {

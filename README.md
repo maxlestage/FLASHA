@@ -1,17 +1,32 @@
 # FLASHA
 
-**Capture. Share. Connect.** — le partage instantané, autrement. 📸
+*Chaque instant se révèle.* ✦
 
-FLASHA est une application sociale mobile centrée sur la photo, la vidéo, les conversations
-instantanées et le partage de moments éphémères : une caméra au centre, des Flashs, **Talka** la
-messagerie, des Stories et un espace Découvrir.
+FLASHA est une application sociale de photo, vidéo et messages, avec sa propre patte : la
+photographie argentique (papier, encre, cyanotype, chambre noire). On y envoie des **Flashs**
+éphémères, on remplit sa **Pellicule** de 24 poses par jour, on parcourt la **Planche** des
+amis (une planche-contact), on regarde des **Rushs**, on écrit sur **Talka**, et on réagit
+d'un **éclat** ✦. Tout est chiffré sur le téléphone, sans base de données. L'identité est
+décrite dans [BRAND.md](BRAND.md).
 
 Ce dépôt contient :
 
 | Dossier | Contenu | Technologie |
 |---|---|---|
-| `src/`, `public/` | le site de présentation | Rust, [Paquets](https://github.com/maxlestage/Paquets) (pages rendues par le serveur, îlots WebAssembly, scène 2D avec `paquets::ecs`) |
+| `src/`, `public/` | le site, installable comme application (PWA), et le relais sans base | Rust, [Paquets](https://github.com/maxlestage/Paquets) (pages rendues par le serveur, îlots WebAssembly, scène 2D avec `paquets::ecs`) |
 | `ios/` | l'application iPhone | Swift 6, SwiftUI, AVFoundation |
+
+## Installer FLASHA (PWA) et la partager
+
+Le site est une **application installable** : manifeste, icônes, plein écran, hors connexion.
+
+- **iPhone** : ouvrez le site dans Safari → bouton *Partager* → *Sur l'écran d'accueil*.
+- **Android** : bouton « Installer FLASHA » sur le site, ou menu ⋮ de Chrome → *Installer
+  l'application*.
+
+La section **Partager** envoie FLASHA par la feuille de partage du téléphone (Messages,
+WhatsApp, Mail, AirDrop…), par des liens directs (Messages, WhatsApp, Telegram, e-mail), ou
+par un QR code. Les liens partagés s'affichent avec un aperçu (`public/og.png`).
 
 ## Le site
 
@@ -22,15 +37,17 @@ puis élargi par `min-width`. Aucune largeur fixe ne dépasse l'écran, rien ne 
   montent en ondulant, et chaque toucher déclenche un éclat de particules. Elle tourne avec le
   moteur ECS de Paquets (`Camera2d`, `Mesh2d`, `ColorMaterial`) dans le canvas d'un îlot.
 - **Îlots interactifs** (`src/lib.rs`), écrits en Rust et compilés en WebAssembly :
-  - la caméra : filtres, photo ou vidéo, déclencheur qui fait un vrai flash ;
-  - le Flash : durée d'affichage (1 s à ∞), compte à rebours, expiration et relecture autorisée ;
+  - la chambre (caméra) : tirages Cyanotype, Argentique, Halo et Sépia, photo ou vidéo, flash ;
+  - le Flash : durée d'affichage (1 s à ∞), photo qui se développe, expiration et relecture ;
   - Talka : une conversation où Léa répond, avec l'indicateur « en train d'écrire ».
-  - les Clips : des vidéos courtes verticales, une par écran (glisser, flèches), onglets
-    « Pour toi » et « Abonnements », double toucher pour aimer, suivre un créateur, son qui défile ;
-  - le Fil : une publication en carrousel (glisser, flèches), double toucher pour aimer,
-    enregistrer, commenter.
+  - les Rushs : des vidéos courtes verticales, comme des images de film perforées (glisser,
+    flèches), onglets « Découvertes » et « Mes suivis », double toucher pour un éclat ✦,
+    minutage, suivre quelqu'un ;
+  - la Planche : la planche-contact des tirages des amis ; toucher un tirage l'entoure au
+    crayon gras et l'agrandit, il se développe ; éclat privé, commentaires ;
+  - Partager (feuille de partage du téléphone ou copie du lien) et Installer (PWA).
 - **Animations** en CSS : apparitions au défilement (`animation-timeline: view()`, sans
-  JavaScript), téléphone flottant, bande défilante des outils de l'éditeur, anneaux de stories,
+  JavaScript), bandes de pellicule qui défilent, développement des photos, tirages posés,
   notifications. Tout respecte `prefers-reduced-motion`.
 - Mode clair et mode sombre, contenu lisible même sans WebAssembly.
 
@@ -80,10 +97,10 @@ Ouvrez `ios/Flasha.xcodeproj` avec Xcode 27 (Swift 6, iOS 26 minimum, iPhone).
 - **Amis** : stories, Flashs reçus qui expirent après la durée choisie, meilleurs amis, ajout
   par pseudo ou lien d'invitation ;
 - **Talka** : conversations, recherche, réactions, copie ;
-- **Fil** (onglet Amis, avec Flashs et Amis) : stories, publications en carrousel, double
-  toucher pour aimer, commentaires, enregistrement, nouvelle publication ;
-- **Découvrir** : les Clips, page par page, « Pour toi » et « Abonnements », suivre un créateur,
-  aimer, commenter, enregistrer, partager, disque du son qui tourne ;
+- **Planche** (onglet Amis, avec Flashs et Amis) : les tirages des amis, avec leur dateur,
+  double toucher pour un éclat ✦, commentaires, nouvelle publication ;
+- **Rushs** : vidéos courtes, page par page, « Découvertes » et « Mes suivis », suivre,
+  éclats, commentaires, garder, partager ;
 - **Profil** : statistiques privées, grille des publications et contrôles de confidentialité
   (localisation coupée par défaut).
 
@@ -119,7 +136,7 @@ Pour s'abonner et s'échanger publications, Flashs et messages, les téléphones
 - **identités vérifiées** : à la connexion, le téléphone signe un défi aléatoire ; le relais
   garantit l'expéditeur de chaque paquet, et le destinataire vérifie sa signature ;
 - s'abonner : « Ajouter un ami » → identifiant → demande chiffrée → la personne accepte dans
-  l'onglet Amis → ses publications du Fil arrivent.
+  l'onglet Amis → ses tirages arrivent sur la Planche.
 
 Le relais fait partie du serveur Rust : il tourne partout où le serveur tourne (Heroku avec le
 secret `HEROKU_API_KEY` et la variable `HEROKU_APP_NAME`, ou tout hébergeur Docker), sans base ni

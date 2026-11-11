@@ -30,6 +30,7 @@ struct TalkaView: View {
                     }
                 }
             }
+            .paperBackground()
             .navigationTitle("Talka")
             .searchable(text: $search, prompt: "Rechercher")
             .navigationDestination(for: Conversation.ID.self) { id in
@@ -100,7 +101,7 @@ struct ChatView: View {
                             .fill(Theme.gradient)
                     } else {
                         UnevenRoundedRectangle(topLeadingRadius: 20, bottomLeadingRadius: 6, bottomTrailingRadius: 20, topTrailingRadius: 20)
-                            .fill(Color(.secondarySystemBackground))
+                            .fill(Theme.card)
                     }
                 }
                 .overlay(alignment: message.fromMe ? .bottomLeading : .bottomTrailing) {
@@ -133,7 +134,7 @@ struct ChatView: View {
                 .focused($focused)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(Color(.secondarySystemBackground), in: Capsule())
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: 6))
                 .onSubmit(send)
             Button(action: send) {
                 Image(systemName: "paperplane.fill")
